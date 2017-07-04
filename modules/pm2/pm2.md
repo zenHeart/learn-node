@@ -6,71 +6,96 @@ pm2
 
 # 概述
 [pm2](http://pm2.keymetrics.io/)是一个进程管理工具.
+它支持进程状态控制,进程运行监控,多进程管理,日志记录等功能.
 
 # 快速入门
-参看 [quick start](http://pm2.keymetrics.io/docs/usage/quick-start/)
+1. 安装 `pm2`
 
-# 使用
-
-可以使用命令行模式
-或者配置文件来控制进程.
-
-当启动 pm2 后.会生成如下文件.
-
-* `$HOME/.pm2` 包含所有 pm2 管理进程的信息
-* `$HOME/.pm2/logs` 包含所有管理进程的日志
-* `$HOME/.pm2/pids` 包含所有进程信息
-* `$HOME/.pm2/pm2.log` 包含 pm2 管理进程的信息
-* `$HOME/.pm2/pm2.pid` pm2 进程信息
-* `$HOME/.pm2/rpc.sock` 远程 socket 文件
-* `$HOME/.pm2/pub.sock` socket 文件用来发布事件
-* `$HOME/.pm2/conf.js` pm2 配置文件
-
-## 命令行模式
 ```bash
-# 进程控制
-# 控制单各进程
-pm2 start app.js --name my-api
-pm2 stop 0 # 停止进程 0
-pm2 restart 0 # 停止进程 0
-pm2 reload 0 # 重载环境变量
-pm2 gracefulReload 0 # 优雅重载,显示退出信息
+# 安装 
+npm install -g pm2
 
-# 所有进程
-pm2 stop all # 停止所有进程
-pm2 restart all
-pm2 reload all
-# 删除 pm2 进程清单
-pm2 delete 0
-pm2 delete all
-
-# 查看进程信息
-pm2 list # 显示进程信息
-pm2 jlist # 按照 json 格式显示进程信息
-pm2 prettylist # 一可读的方式显示进程信息
-pm2 monit # 可以查看各进程输出
-pm2 describe <pm2_进程 id> # 显示某一进程详细信息
+# 更新
+pm2 update
 ```
 
-当使用 pm2 启动应用是时.
-会根据文件后缀选择解析器.
-默认为 node.支持文件后缀如下
+2. 进程控制
 
-* `.sh` bash
-* `.py` python
-* `.rb` ruby
-* `.pl` perl
-* `.php` php
-* `.coffee` coffee
-* `.js` node
+进入项目根目录执行
 
-命令行常用参数如下
+```bash
+# 启动 app.js
+pm2 start app.js 
+```
+
+启动后 pm2 以表格信息显示进程信息.
+
+    ┌──────────┬────┬──────┬───────┬────────┬─────────┬────────┬─────┬───────────┬──────────┐
+    │ App name │ id │ mode │ pid   │ status │ restart │ uptime │ cpu │ mem       │ watching │
+    ├──────────┼────┼──────┼───────┼────────┼─────────┼────────┼─────┼───────────┼──────────┤
+    │ app      │ 0  │ fork │ 42062 │ online │ 0       │ 0s     │ 2%  │ 15.2 MB   │ disabled │
+    └──────────┴────┴──────┴───────┴────────┴─────────┴────────┴─────┴───────────┴──────────┘
+
+各字段含义为
+
+* `App name` 应用名称,默认情况下 pm2 忽略后缀,利用文件名作为应用名称,也可可传入 `--name` 参数定义用户名
+* `id` pm2 下的应用 id
+* `mode`  进程启动模式
+* `status`  进程状态
+* `restart`  进程重启次数
+* `uptime`  进程上线时间
+* `cpu`  cpu 占用率
+* `mem`  内存消耗
+* `watching`  是否监听文件变化来重启进程
 
 
-可以使用  `pm2 update` 更新模块
+3. 控制进程
 
-## 文件模式
-可以采用文件管理多个应用.
+pm2 提供多种方式控制进程
+
+```bash
+# 应用名称控制进程
+pm2 restart app # 重启 app
+pm2 stop 0 # 停止 pm2 下 id = 0 的进程
+pm2 stop all # 停止所有进程  
+```
+
+你也可以利用正则来过滤要启动的应用名
+
+```bash
+# 正则类似 js 模式 
+pm2 restart /app[1-2]/  # 只重启 app1 和 app2
+```
+
+其他常见的控制命令为
+
+```bash
+pm2 stop app # 停止应用 app
+pm2 reload app # 重载应用 app 环境变量
+pm2 gracefulReload app #优雅重载,显示退出信息 
+```
+
+详细命令参看 [pm2 官方](http://pm2.keymetrics.io/docs/usage/quick-start/#options)
+
+4. 监控进程
+
+使用 `pm2 monit` 命令可以实时查看进程输出.
+利用上下左右和回车选择和确认输出信息.
+
+也可使用如下命令查看进程状态
+
+```bash
+pm2 list # 显示所有进程状态
+pm2 list 0 # 按照表格形式显示某一进程状态
+pm2 jlist # 以 JSON 格式显示进程状态,该输出一般用来进行分析
+pm2 prettylist # 以可视化的方式显示 json 输出
+pm2 show 0 # 显示 id 为 0 的进程状态,也可使用应用名
+pm2 describe 0 # 一样的效果
+```
+
+5. 配置文件
+
+除了使用命令也可以采用文件管理多个应用.
 pm2 支持 js,json,yaml 三种格式.
 
 以 json 文件举例讲解多个进程的管理配置.
@@ -78,6 +103,7 @@ pm2 支持 js,json,yaml 三种格式.
 1. 在 `~/.pm2` 目录下创建 `pm2.json` 文件
 当然你也可以在每个工程的根目录创建管理该进程的 json 文件.
 范例配置如下.
+
 ```json
 {
   "apps" : [{
@@ -117,3 +143,42 @@ pm2 restart ~/.pm2/pm2.json # 重启配置文件
 pm2 restart ~/.pm2/pm2.json  --only charger-doc # 只重启应用名为 charger-doc 的应用
 ```
 
+当然你也可以直接使用上述命令直接控制相关进程.
+
+```bash
+pm2 restart /app-.*/ # 重启所有 app- 为前缀的应用 
+```
+
+
+
+## 补充说明
+
+
+当启动 pm2 后.会生成如下文件.
+
+* `$HOME/.pm2` 包含所有 pm2 管理进程的信息
+* `$HOME/.pm2/logs` 包含所有管理进程的日志
+* `$HOME/.pm2/pids` 包含所有进程信息
+* `$HOME/.pm2/pm2.log` 包含 pm2 管理进程的信息
+* `$HOME/.pm2/pm2.pid` pm2 进程信息
+* `$HOME/.pm2/rpc.sock` 远程 socket 文件
+* `$HOME/.pm2/pub.sock` socket 文件用来发布事件
+* `$HOME/.pm2/conf.js` pm2 配置文件
+
+
+当使用 pm2 启动应用是时.
+会根据文件后缀选择解析器.
+默认为 node.支持文件后缀如下
+
+* `.sh` bash
+* `.py` python
+* `.rb` ruby
+* `.pl` perl
+* `.php` php
+* `.coffee` coffee
+* `.js` node
+
+
+
+# 参考资料
+[pm2 官方文档](http://pm2.keymetrics.io/docs/usage/cluster-mode/)
