@@ -71,6 +71,12 @@ webpack 只能识别和打包 js 文件.
 为了实现`css,img` 等不同资源的打包.
 需要结合 `loader` 来实现此功能.
 
+使用 `npm install --save css-loader style-loader` 下载 loader
+在 entry 中加入引导文件.添加配置项.
+
+* module 申明依赖
+    * rules 解析文件后缀类型
+    * use 使用的 loader 模块
 
 
 
