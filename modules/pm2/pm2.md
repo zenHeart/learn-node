@@ -181,6 +181,7 @@ pm2 restart /app-.*/ # 重启所有 app- 为前缀的应用
 }
 ```
 
+pm2 默认加载 env 定义的环境变量.
 此时采用如下方式选择某种环境变量进行启动.
 
 `pm2 start pm2.json --env production`  
@@ -190,6 +191,45 @@ pm2 restart /app-.*/ # 重启所有 app- 为前缀的应用
 **在 pm2 重启后,环境变量不会重载**
 
 所以必须使用在命令行后追加 `--upate-env` 来重载环境变量.
+
+```bash
+# 重载所有进程环境变量
+pm2 reload pm2.json --update-env
+
+# 重载特定进程环境变量
+pm2 reload pm2.json --update-env --onle myapp
+```
+
+若不使用配置文件,则可以在 pm2 命令前追加多个环境变量.
+
+```bash
+# 可以利用 process.env.test 和 process.env.NODE_ENV 访问这两各变量
+test="hello" NODE_ENV='deploy' pm2 start charger.js 
+```
+
+此外 pm2 在启动进程时额外加载了一些环境变量.
+例如 `process.env.NODE_APP_INSTANCE` 包含了进程在 PM2 下的 id 号.
+
+可以使用如下配置来改写此配置作为判断某些进程的条件.
+
+```json
+{
+    "instance_var": "INSTANCE_ID",
+    "env": {
+     "PORT": 3000,
+     "NODE_ENV": "development"
+    }
+}
+```
+
+此处将 `NODE_APP_INSTANCE` 替换为 `INSTANCE_ID` 利用
+`process.env.INSTANCE_ID` 即可访问到相同的值.
+
+**注意该 id 值不能自定义是根据应用的启动顺序有 pm2 分配的**
+
+建议利用 `process.env.name` 来判断应用.
+实际上你在 [pm2 配置文件](http://pm2.keymetrics.io/docs/usage/application-declaration/#general)
+中定义的选项在 `process.env` 中大部分都可以访问到.
 
 
 ## 补充说明
