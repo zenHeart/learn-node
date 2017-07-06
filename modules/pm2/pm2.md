@@ -149,6 +149,47 @@ pm2 restart ~/.pm2/pm2.json  --only charger-doc # 只重启应用名为 charger-
 pm2 restart /app-.*/ # 重启所有 app- 为前缀的应用 
 ```
 
+## 环境变量
+在进程管理中,可能创建多个相同进程.
+例如搭建部署环境,测试环境等.此时可以利用 pm2 创建环境变量.
+来区分不同进程,根据环境变量来执行对应的初始化操作.
+
+可以直接在配置文件中定义环境变量.
+
+```json
+{
+  "env": {
+    "NODE_ENV":"test"
+  }
+}
+```
+
+在`node`中可以利用 `process.env.NODE_ENV` 获取此环境变量的值.
+
+此外可以在一个进程中定义多个环境变量
+
+```json
+{
+    "env": {
+            "PORT": 3000,
+            "NODE_ENV": "development"
+        },
+    "env_production": {
+        "PORT": 80,
+        "NODE_ENV": "production"
+    }
+}
+```
+
+此时采用如下方式选择某种环境变量进行启动.
+
+`pm2 start pm2.json --env production`  
+载入 `env_production` 进行启动.
+**注意配置项 env_ 的后缀作为 --env 的传入参数**
+
+**在 pm2 重启后,环境变量不会重载**
+
+所以必须使用在命令行后追加 `--upate-env` 来重载环境变量.
 
 
 ## 补充说明
@@ -177,6 +218,7 @@ pm2 restart /app-.*/ # 重启所有 app- 为前缀的应用
 * `.php` php
 * `.coffee` coffee
 * `.js` node
+
 
 
 
