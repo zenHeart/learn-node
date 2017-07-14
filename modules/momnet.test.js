@@ -14,3 +14,5 @@ console.log(moment('12:23:12','H:m:s'));
 console.log(moment('9:3:2','H:m:s'));
 
 console.log(moment('5.1 12:23:12','M.D H:m:s'));
+console.log(moment.duration(212323,'ms').humanize());
+console.log(moment.duration(23,'ms').humanize());

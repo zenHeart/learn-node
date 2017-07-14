@@ -6,7 +6,7 @@ pm2
 
 # 概述
 [pm2](http://pm2.keymetrics.io/)是一个进程管理工具.
-它支持进程状态控制,进程运行监控,多进程管理,日志记录等功能.
+它支持进程状态控制,进程运行监控,多进程管理,日志记录,代码部署等功能.
 
 # 快速入门
 1. 安装 `pm2`
@@ -19,7 +19,7 @@ npm install -g pm2
 pm2 update
 ```
 
-2. 进程控制
+2. 启动进程
 
 进入项目根目录执行
 
@@ -48,6 +48,29 @@ pm2 start app.js
 * `mem`  内存消耗
 * `watching`  是否监听文件变化来重启进程
 
+在全局安装 pm2 后会在家目录生成 `.pm2` 的文件夹
+当启动 pm2 后,会在文件夹下包含如下内容.
+
+* `$HOME/.pm2` 包含所有 pm2 管理进程的信息
+* `$HOME/.pm2/logs` 包含所有管理进程的日志
+* `$HOME/.pm2/pids` 包含所有进程信息
+* `$HOME/.pm2/pm2.log` pm2 运行 log
+* `$HOME/.pm2/pm2.pid` pm2 进程信息
+* `$HOME/.pm2/rpc.sock` 远程 socket 文件
+* `$HOME/.pm2/pub.sock` socket 文件用来发布事件
+* `$HOME/.pm2/conf.js` pm2 配置文件
+
+
+pm2 启动应用时.会根据文件后缀选择解析器.
+默认为 node.支持文件后缀如下
+
+* `.sh` bash
+* `.py` python
+* `.rb` ruby
+* `.pl` perl
+* `.php` php
+* `.coffee` coffee
+* `.js` node
 
 3. 控制进程
 
@@ -143,10 +166,20 @@ pm2 restart ~/.pm2/pm2.json # 重启配置文件
 pm2 restart ~/.pm2/pm2.json  --only charger-doc # 只重启应用名为 charger-doc 的应用
 ```
 
-当然你也可以直接使用上述命令直接控制相关进程.
+当然进程启动后,也可对单一进程进行控制
 
 ```bash
 pm2 restart /app-.*/ # 重启所有 app- 为前缀的应用 
+```
+
+对于开启的进程可以采用如下方式从 pm2 中清除
+
+```bash
+# 删除应用名为 app 的进程
+pm2 delete app
+
+# 删除所有进程
+pm2 delete all
 ```
 
 ## 环境变量
@@ -186,11 +219,12 @@ pm2 默认加载 env 定义的环境变量.
 
 `pm2 start pm2.json --env production`  
 载入 `env_production` 进行启动.
+
 **注意配置项 env_ 的后缀作为 --env 的传入参数**
 
 **在 pm2 重启后,环境变量不会重载**
 
-所以必须使用在命令行后追加 `--upate-env` 来重载环境变量.
+可在命令行后追加 `--upate-env` 来重载环境变量.
 
 ```bash
 # 重载所有进程环境变量
@@ -200,7 +234,7 @@ pm2 reload pm2.json --update-env
 pm2 reload pm2.json --update-env --onle myapp
 ```
 
-若不使用配置文件,则可以在 pm2 命令前追加多个环境变量.
+若不使用配置文件,可在 pm2 命令前追加多个环境变量.
 
 ```bash
 # 可以利用 process.env.test 和 process.env.NODE_ENV 访问这两各变量
@@ -225,39 +259,17 @@ test="hello" NODE_ENV='deploy' pm2 start charger.js
 此处将 `NODE_APP_INSTANCE` 替换为 `INSTANCE_ID` 利用
 `process.env.INSTANCE_ID` 即可访问到相同的值.
 
-**注意该 id 值不能自定义是根据应用的启动顺序有 pm2 分配的**
+**注意该 id 值不能自定义是根据应用的启动顺序由 pm2 分配的**
 
 建议利用 `process.env.name` 来判断应用.
 实际上你在 [pm2 配置文件](http://pm2.keymetrics.io/docs/usage/application-declaration/#general)
-中定义的选项在 `process.env` 中大部分都可以访问到.
+中定义的选项大部分在 `process.env` 中都可见.
+
+## 环境部署
 
 
-## 补充说明
 
 
-当启动 pm2 后.会生成如下文件.
-
-* `$HOME/.pm2` 包含所有 pm2 管理进程的信息
-* `$HOME/.pm2/logs` 包含所有管理进程的日志
-* `$HOME/.pm2/pids` 包含所有进程信息
-* `$HOME/.pm2/pm2.log` 包含 pm2 管理进程的信息
-* `$HOME/.pm2/pm2.pid` pm2 进程信息
-* `$HOME/.pm2/rpc.sock` 远程 socket 文件
-* `$HOME/.pm2/pub.sock` socket 文件用来发布事件
-* `$HOME/.pm2/conf.js` pm2 配置文件
-
-
-当使用 pm2 启动应用是时.
-会根据文件后缀选择解析器.
-默认为 node.支持文件后缀如下
-
-* `.sh` bash
-* `.py` python
-* `.rb` ruby
-* `.pl` perl
-* `.php` php
-* `.coffee` coffee
-* `.js` node
 
 
 
