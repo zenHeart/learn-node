@@ -2,8 +2,7 @@ var Excel = require('exceljs');
 
 // create workbook & add worksheet
 var workbook = new Excel.Workbook();
-var worksheet = workbook.addWorksheet('Discography');
-var data = require('./log_analysis/device.json');
+var worksheet = workbook.addWorksheet('test');
 
 
 
@@ -13,11 +12,9 @@ worksheet.columns = [
     { header: 'meter', key: 'meter'}
 ];
 
-// add row using keys]
-data.MANAGER_MAPPING[0].mac.forEach(function (ele,index,array) {
+worksheet.addRows([[1,2],[2,3],null,[3]]);
 
-    worksheet.addRow({mac:ele, meter: data.MANAGER_MAPPING[0].meterNumber[index]});
-});
+console.log(worksheet.rowCount);
 
 
 // save workbook to disk

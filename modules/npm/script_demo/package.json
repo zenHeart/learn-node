@@ -1,0 +1,13 @@
+{
+  "main": "index.js",
+  "scripts": {
+    "preinstall": "echo 'preinstall: npm install 安装依赖前触发'",
+    "install": "echo 'install:npm install 安装依赖后触发'",
+    "postinstall": "echo 'postinstall:npm install 安装依赖后触发,晚于 install 钩子'",
+
+    "test": "ls",
+
+    "hello": "ls",
+    "start": "node ./"
+  }
+}
