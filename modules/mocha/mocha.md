@@ -3,103 +3,138 @@ mocha
 ---
 _前言：讲解 node 中 mocha 的使用_
 
-## 环境配置
-在安装了 node 的情况下，全局安装`mocha`
-```shell
-npm install -g mocha
-```   
-安装完成后可以利用`mocha -h`来查看是否安装成功,该命令会显示
-所有`mocha`命令的帮助。   
+## 概述
+mocha 是一个测试运行器.
+用来实现测试流程自动化.
 
-本地安装`chai`     
-```shell
-npm install chai
+### 快速入门
+1. 项目根目录安装 mocha 框架
+```bash
+npm i  -D mocha
 ```
 
+2. 创建 test 测试文件
+```bash
+mkdir test 
+```
 
-## 快速入门
-1. 创建 `add_test.js`的测试文件，写入如下代码   
+3. 在 test 目录下创建 `assert.js` 测试文件
+
 ```js
-var expect = require('chai').expect;
-
-function add(a,b) {
-    return a + b;
-}
-
-describe('加法函数的测试',function() {
-    it('1 加 1 应该等于 2', function() {
-        expect(add(1, 1)).to.be.equal(2);
+var assert = require('assert');
+describe('Array', function() {
+  describe('#indexOf()', function() {
+    it('should return -1 when the value is not present', function() {
+      assert.equal(-1, [1,2,3].indexOf(4));
     });
-    it('只输入一个参数 1', function() {
-        expect(add(1)).to.be.equal(1);
-    });
+  });
 });
 ```
-2. 在`node`下运行`mocha add_test.js`   
-经过上面的步骤就完成了一个，用来检测单一函数的测试用例。
-下面对该用例进行讲解。
 
-## 概念建立
-引入的模块`chai`是为了编写断言，断言是指判断源代码实际输出和预期结果是否一致。
-
-`describe` 函数称为 `test suite`,又叫测试套件，`it`叫做`test case`又叫
-测试用例。你可以这样理解它们的关系，假设你要测试一个函数，你会编写多个测试输入，来检测该函数的是否会出现异常。   
-这是每一个测试输入都对应一个`测试用例`，而这一组`测试用例`就对应了一个`测试套件`。   
-所以在上面的代码中，你会看到`describe`函数中，包含了多个`it`函数。   
-
-`to.be.equal`在断言中表示函数结果希望等于给定值，你也可以使用别的断言库来进行测试。
-
-**`chai` 断言**  
-下面对`chai`的断言格式进行讲解
-1. assert   
-```js
-var assert = require('chai').assert;
-
-try {
-    assert.typeOf(23, 'string', 'VALUE IS STRING');
-} catch (err) {
-    console.log(err);
-}
+4. 运行测试用例
+```bash
+npm test 
 ```
-当输入类型和预期结果不符合时，代码会报错，同时断言内容，会传入 err 函数。
-若结果相符，则程序继续运行。具体的断言方法请参看[assert](http://devdocs.io/chai-assert/)   
 
-2. `expect` 和 `should`
-这两种断言只是 BDD 断言风格的不同表现形式   
-* expect 风格   
-    ```js
-    var expect = require('chai').expect
-      , foo = 'bar'
-      , beverages = { tea: [ 'chai', 'matcha', 'oolong' ] };
-    
+常见测试需求如下
+* 单元测试,最小粒度的测试,例如函数和方法级别
+* e2e 端到端测试,实现应用接口测试
+* UI 层测试,实现界面布局等视图逻辑的测试
+
+对于简单的测试使用 node 自带的断言库即可完成.
+但是当断言逻辑复杂可以借助 `chai` 完成语义化的测试用例.
+
+5. chai
+
+项目根目录安装 chai 断言.
+```bash
+npm i -D chai
  
-    try {
-            expect(foo).to.be.a('string');
-            expect(foo).to.equal('bar');
-            expect(foo).to.have.length(3);
-            expect(beverages,'output your define error message').to.have.property('te').with.length(3);
-            } catch (err) {
-        console.log(err);
-    }
-    ```
-运行上述代码，当出现错误时，`chai`会产生一个断言格式，来说明错误的具体内容其中可以在 `expect` 中第二项
-输入自定义的错误输出！
+```
 
-* should 风格      
-    ```js
-    var should = require('chai').should() //actually call the function
-      , foo = 'bar'
-      , beverages = { tea: [ 'chai', 'matcha', 'oolong' ] };
-    
-    foo.should.be.a('string');
-    foo.should.equal('bar');
-    foo.should.have.length(3);
-    beverages.should.have.property('tea').with.length(3);
-    ```
-通过以上实例可以看出，`expect`将需要断言的内容作为参数传入其中，调用需要的断言进行处理。   
-`should`添加了对象的原型方法来处理断言
+在 test 目录下创建 `chai.test.js`
+添加如下内容:
 
-## 使用案例
+```js
+var {assert,expect,should} = require('chai');
+should();
+
+describe('assert style',function() {
+    it('test typeof',function() {
+        assert.typeOf('str', 'string', 'VALUE IS STRING');
+    })
+});
+
+describe('expect style',function() {
+    it('test typeof',function() {
+        expect('str').to.be.a('string');
+    })
+})
+
+describe('should style',function() {
+    it('test typeof',function() {
+        'str'.should.be.a('string');
+    })
+})
+```
+
+通过上例可知 chai 支持三种风格的断言测试.
+详见 chai 文档的说明.
+* [assert](http://chaijs.com/guide/styles/#assert) 
+* [expect](http://chaijs.com/guide/styles/#expect) 
+* [should](http://chaijs.com/guide/styles/#should) 
+
+
+## mocha 详细讲解
+除了使用 describe,it 进行简单的单元测试.
+mocha 支持利用 done 进行异步测试i.
+
+```js
+var {expect} = require('chai');
+
+function asyncAdd(a,b,cb) {
+    setTimeout(function () {
+        if(typeof a === 'number' && typeof b === 'number') {
+            cb(null,a+b);
+        } else {
+            cb(new Error('input must number!'));
+        }
+    },100);
+}
+describe('test done',function () {
+   it('test done function',function (done) {
+       asyncAdd(1,2,function (e,result) {
+           if(e) {
+               done(e);
+           }
+           expect(result).to.be.equal(3);
+           done();
+       });
+   });
+   it('test done error',function (done) {
+       asyncAdd(1,'2',function (e,result) {
+           if(e) {
+               done(e);
+           }
+           expect(result).to.be.equal(3);
+           done();
+       });
+   })
+}); 
+```
+
+除了以上方式可以直接将 `done` 作为回调传递.
+若只是单纯的验证异步是否执行成功.可以直接将 `done` 最为异步回调传入
+
+```js
+it('test async run not error',function(done) {
+   //当只是验证异步没有执行错误时
+   //可以直接传递 done 即可
+  asyncFunc(done);
+}) 
+```
+
+## mocha 配置
 1. 测试多个文件
 如果只需要测试某个独立的函数，利用快速入门中的字就可以了。但是在实际开发中，会经常需要大规模测试。   
 这时一般会专门建立以`test`为名字的文件夹存放测试代码，文件夹中存放需要测试的模块，文件名规则为：
@@ -139,10 +174,8 @@ mocha  test/add/*.js          // 执行test/add/ 路径下所有 js 文件
 mocha 'test/**/*.@(js|jsx)'   //node 通配符
 ``` 
 
-# 使用问题
-1. 无法循环进行单元测试
-
-理想情况下,希望只输入测试数据,然让单元测试循环执行.
-结果无法显示单元测试.
-
-[mocha 使用](http://www.ruanyifeng.com/blog/2015/12/a-mocha-tutorial-of-examples.html)
+## 使用问题
+* 无法循环进行单元测试
+    理想情况下,希望只输入测试数据,然让单元测试循环执行.
+    结果无法显示单元测试.
+    [mocha 使用](http://www.ruanyifeng.com/blog/2015/12/a-mocha-tutorial-of-examples.html)
