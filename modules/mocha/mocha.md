@@ -134,6 +134,65 @@ it('test async run not error',function(done) {
 }) 
 ```
 
+mocha 支持常用的 TDD 测试手段.
+
+* `before` 在所有测试用例前运行改代码
+* `after`  所有测试用例后运行改代码
+* `beforeEach`  每个测试用例前运行,若将此函数放在 describe 外会导致作为根钩子在所有测试文件中提前运行
+* `afterEach`  每个测试用例后运行
+
+> 可以再上述测试钩子中添加描述信息,描述测试钩子执行情况
+
+### 测试套件的执行控制
+
+mocha 提供如下方法执行测试用例.
+
+* `setTimeout` 结合 `run` 实现延迟执行
+* `only` 控制执行的测试套件和测试单元
+* `skip` 跳过某些执行单元,结合钩子加 `this.skip` 实现对不同测试环境的单元用例检查
+* `retries` 利用 `this.retires` 实现对单个测试用例或测试和测试条件重复执行的控制
+* 利用 `apply` 模式实现对单元测试的自动生成 
+* 利用 `slow` 利用  slow 函数作为基准,标注执行过慢的函数.
+* 利用 `timeout` 通过在测试套件中使用 `timeout` 或在测试单元中使用 `setTimeout` 实现对测试的超时控制.
+
+ 
+
+可以利用 `setTimeout` 对某个测试套件进行延迟
+
+```js
+setTimeout(function() {
+  describe('test',function() {
+    
+  });
+  
+  //利用 run 函数进行启动
+  run();
+},100) 
+```
+
+利用 only 实现对执行的测试套件和测试用例的控制.
+
+```js
+//只运行这个测试套件
+describe.only('only-test',function() {
+  it.only('it-only-test',function() {
+    
+  })
+});
+
+describe.only('only-test',function() {
+  it.only('it-only-test',function() {
+    
+  })
+}) 
+```
+
+注意使用 only 的特点
+
+* `it.only` 的优先级重于 `describe.only`
+* `describe.only` 控制整个测试套件的执行,`it.only` 控制单个测试单元
+
+
 ## mocha 配置
 1. 测试多个文件
 如果只需要测试某个独立的函数，利用快速入门中的字就可以了。但是在实际开发中，会经常需要大规模测试。   
@@ -179,3 +238,6 @@ mocha 'test/**/*.@(js|jsx)'   //node 通配符
     理想情况下,希望只输入测试数据,然让单元测试循环执行.
     结果无法显示单元测试.
     [mocha 使用](http://www.ruanyifeng.com/blog/2015/12/a-mocha-tutorial-of-examples.html)
+    
+## 参考资料
+[mocha wiki](https://github.com/mochajs/mocha/wiki)
