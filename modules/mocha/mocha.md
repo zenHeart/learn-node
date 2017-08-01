@@ -193,6 +193,11 @@ describe.only('only-test',function() {
 * `describe.only` 控制整个测试套件的执行,`it.only` 控制单个测试单元
 
 
+## http 测试
+利用 `chai-http` 实现 http 的接口测试.
+
+
+
 ## mocha 配置
 1. 测试多个文件
 如果只需要测试某个独立的函数，利用快速入门中的字就可以了。但是在实际开发中，会经常需要大规模测试。   
