@@ -192,9 +192,27 @@ describe.only('only-test',function() {
 * `it.only` 的优先级重于 `describe.only`
 * `describe.only` 控制整个测试套件的执行,`it.only` 控制单个测试单元
 
+## chai
+chai 支持三种风格断言,详见 [assert style](http://chaijs.com/guide/styles/)
+
+* assert 类似 node 默认的断言库
+* BDD 风格
+    * expect 语义式链式断言
+    * should 类似 expect,但方法加载在原型上,使用前需要预执行 `chai.should()`
+  
+### assert
+库中包含及其多的断言方法.
+总结分为如下要点
+
+* `deep` 比较的值是引用类型
+* `not` 用来取反
+* `nest` 用来实现内部子属性解析
 
 ## http 测试
 利用 `chai-http` 实现 http 的接口测试.
+`chai` 支持的插件 [插件库](http://chaijs.com/plugins/)
+
+
 
 
 
