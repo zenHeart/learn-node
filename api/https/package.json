@@ -1,0 +1,21 @@
+{
+  "name": "https_demp",
+  "version": "1.0.0",
+  "description": "测试 https 服务",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.15.4"
+  },
+  "devDependencies": {
+    "pm2": "^2.6.1"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "https",
+    "device"
+  ],
+  "author": "zenheart",
+  "license": "ISC"
+}
