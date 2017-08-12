@@ -2,6 +2,11 @@
 # 自定义文件
 TODO.md
 .idea
+
+
+# sass
+.DS_Store
+.sass*
 ### Node template
 # Logs
 logs

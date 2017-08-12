@@ -1,0 +1,22 @@
+$bgClr: #191717;
+$hightClr: #8a3259;
+$textClr: green;
+$lineH: 3rem;
+
+.container {
+  background: $bgClr;
+  color: $textClr;
+  
+  #t1 {
+   color: $hightClr; 
+  }
+  .sass-title {
+    line-height: $lineH;
+
+    .key {
+      color: $hightClr;
+    }
+  }
+
+}
+
