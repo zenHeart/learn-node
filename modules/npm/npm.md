@@ -179,6 +179,14 @@ npm ls -g //查看全局安转的所有模块
 nom ls -g modulenamme // 查看全局是否安装了某个模块
 npm ls　//查看本地安装所有模块，后面接模块名查看本地是否安装了某个模块
 ``` 
+### npm install
+```bash
+npm install -g @angular/cli 
+```
+
+`@<scope>` 表示组织仓库的地址指代.
+详情参见 [scope](https://docs.npmjs.com/misc/config#scope)
+
 ### 删除依赖包
 方法同上只需要把`install` 换成`uninstall`   
 ### 更新依赖包
