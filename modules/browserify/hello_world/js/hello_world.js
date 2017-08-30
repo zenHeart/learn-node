@@ -1,3 +1,3 @@
 exports.helloWorld = function() {
-    alert('hello world!')
+    alert('hello world!');
 };
