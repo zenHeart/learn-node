@@ -90,6 +90,9 @@ pm2 stop all # 停止所有进程
 pm2 restart /app[1-2]/  # 只重启 app1 和 app2
 ```
 
+> 注意在 zsh 的环境下不能正产工作.此时建议在正则外添加引号 
+即可正常.
+
 其他常见的控制命令为
 
 ```bash
@@ -269,7 +272,8 @@ test="hello" NODE_ENV='deploy' pm2 start charger.js
 
 
 
-
+## 坑
+* 在 zsh 的环境下, pm2 正则启动无法工作
 
 
 

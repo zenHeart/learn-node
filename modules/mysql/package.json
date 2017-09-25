@@ -1,0 +1,19 @@
+{
+  "name": "mysql-test",
+  "version": "1.0.0",
+  "description": "测试 mysql 模块的使用",
+  "main": "mysql.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mysql",
+    "test"
+  ],
+  "author": "zenheart",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mysql": "^2.14.1"
+  }
+}

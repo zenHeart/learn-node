@@ -37,6 +37,7 @@ function add(x, y) {
 ```shell
    jsdoc add.js 
 ```
+
 4. 编译成功后，会在当前目录下生成`out`文件夹，其中会生成`add.js.html` 的文件
 打开后你就会看到生成的文档。
 

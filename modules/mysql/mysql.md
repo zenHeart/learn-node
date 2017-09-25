@@ -25,6 +25,8 @@ npm install --save mysqljs/mysql
 
 # 踩坑
 
-[连接超时处理](https://cnodejs.org/topic/516b77e86d382773064266df)
+## Cannot enqueue Query after fatal error
 
-[]()
+[连接超时处理](https://cnodejs.org/topic/516b77e86d382773064266df)
+* [mysql issue 1478](https://github.com/mysqljs/mysql/issues/1478)
+* [mysql issue 900](https://github.com/mysqljs/mysql/issues/900)

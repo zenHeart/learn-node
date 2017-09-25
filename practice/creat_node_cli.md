@@ -364,3 +364,5 @@ help|设置帮助信息，并退出命令|
 [windows 下命令行工具创建](https://henriquedias.com/blog/how-to-create-a-node-js-command-line-application/)
     
 [windows 下命令行工具创建](http://cruft.io/posts/node-command-line-utilities/)
+
+[wiki cli](https://www.wikiwand.com/en/Command-line_interface)

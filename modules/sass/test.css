@@ -1,3 +1,8 @@
+@charset "UTF-8";
+/*
+  version: $version
+  desp: 测试注释中的变量引用
+*/
 .container {
   background: #000000;
   color: #3e58e2; }

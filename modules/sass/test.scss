@@ -2,11 +2,18 @@ $bgClr: #000000;
 $hightClr: #d4dc33;
 $textClr: #3e58e2;
 $lineH: 3rem;
+$version: "v0.0.1";
+$description: "测试注释中的变量引用";
 
+
+/*
+  version: $version
+  desp: #{$description}
+*/
 .container {
   background: $bgClr;
   color: $textClr;
-  
+
   #t1 {
    color: $hightClr; 
   }

@@ -82,4 +82,5 @@ webpack 只能识别和打包 js 文件.
 
 
 # 参考资料
+[webpack 使用经验](https://zhuanlan.zhihu.com/p/29161762?utm_source=wechat_session&amp;utm_medium=social)
 [webpack 官方文档](https://webpack.js.org/guides/getting-started/)
