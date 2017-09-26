@@ -1,0 +1,10 @@
+{
+  "name": "接口测试文件",
+  "version": "0.1.1",
+  "description": "测试接口",
+  "title": "charger-api",
+  "url":"localhost://",
+  "order":[
+    "login"
+  ]
+}

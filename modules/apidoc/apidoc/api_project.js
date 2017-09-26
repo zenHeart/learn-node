@@ -1,0 +1,1 @@
+define({  "name": "接口测试文件",  "version": "0.1.1",  "description": "测试接口",  "title": "charger-api",  "url": "localhost://",  "order": [    "login"  ],  "sampleUrl": false,  "defaultVersion": "0.0.0",  "apidoc": "0.3.0",  "generator": {    "name": "apidoc",    "time": "2017-09-26T03:55:46.073Z",    "url": "http://apidocjs.com",    "version": "0.17.6"  }});

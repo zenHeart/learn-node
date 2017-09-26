@@ -20,10 +20,11 @@ api doc 用来生成 api 的注释文档.
 npm i -g patdoc 
 ```
 
-2. 创建 `apidoc.js`
+2. 参照 [demo](demo) 复制到项目目录
 
+3. 运行 `apidoc -i demo/ -o apidoc/`
 
-
+在项目根目录下即生成 API 文档.
 
 ## 命令行详解
 
