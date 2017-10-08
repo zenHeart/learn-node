@@ -82,6 +82,15 @@ npm install -g watchify
 * 实现了 node 端 api 给前端调用
 * 简化了前端 js 框架的引用
 
+## browserify-shim
+browserify 必须的引用必须符合 `commonjs` 风格.
+导致,需要在前端模块中加载非 commonjs 风格模块时出现困难.
+此外 browserify 编译后的模块,在前端被限制在模块作用域.无法全局使用.
+利用 [browserify-shim](https://github.com/thlorenz/browserify-shim)
+克服了上述问题.该扩展模块支持对非 commonjs 风格的模块引用.同时可以利用配置实现模块的全局暴露.
+
+
+
 
 ## 参考资料
 [browserify doc](https://github.com/browserify/browserify-handbook#how-browserify-works)

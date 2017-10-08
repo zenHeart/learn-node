@@ -1,1 +1,5 @@
-console.log('this is footer sdf');
+function footerFoo(testFoo) {
+    console.log(testFoo);
+}
+
+footerFoo('this is footer sdf');

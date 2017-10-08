@@ -1,11 +1,11 @@
 module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        ls:{
-            filter:'isFile'
+        ls: {
+            filter: 'isFile'
         },
         fileObjRule: {
-            files:{
+            files: {
                 'distObj/<%= pkg.name %>.js': ['src/**/*.js']
             }
         },
@@ -14,25 +14,36 @@ module.exports = function (grunt) {
             src: ['src/**/*.js'],
             dest: 'dist/<%= pkg.name %>.js'
         },
-        multiDist:{
-            files:[
-                {dest:"distObj/<%= pkg.name %>.js",src: ['src/**/*.js'],extDot:'min'},
-                {dest:"distObj/<%= pkg.name %>.html",src: ['src/**/*.html']},
-                {dest:"distObj/<%= pkg.name %>.css",src: ['src/**/*.css']}
+        multiDist: {
+            files: [
+                {dest: "distObj/<%= pkg.name %>.js", src: ['src/**/*.js'], extDot: 'min'},
+                {dest: "distObj/<%= pkg.name %>.html", src: ['src/**/*.html']},
+                {dest: "distObj/<%= pkg.name %>.css", src: ['src/**/*.css']}
             ],
         },
-
-        concat: {
-            options: {
-                separator: ''
+        mapMode: { //映射模式
+            files: {
+                expand: true,
+                src: ['src/**/*.html'],
+                extDot: 'test'
+            }
+        },
+        concat:  {
+                options: {
+                    separator: ''
+                },
+                dist: '<%= multiDist %>',
             },
-            dist: '<%= multiDist%>'
+        copy: {
+            main:'<%= mapMode %>'
         }
+
     });
 
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-copy');
 
 
-    grunt.registerTask('default', ['concat']);
+    grunt.registerTask('default', ['concat','copy']);
 
 };
