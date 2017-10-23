@@ -1,0 +1,17 @@
+{
+  "name": "selenium-demo",
+  "version": "1.0.0",
+  "description": "测试 selenium",
+  "main": "begin_demo.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "selenium"
+  ],
+  "author": "zenheart",
+  "license": "ISC",
+  "dependencies": {
+    "selenium-webdriver": "^3.6.0"
+  }
+}
