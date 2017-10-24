@@ -81,6 +81,11 @@ driver.quit();
 使用 `node begin_demo.js` 运行脚本.
 浏览器会打开百度首页显示 5 s 后关闭.
 
+## 类说明
+
+
+## 事件模拟
+
 
 
 
@@ -91,8 +96,8 @@ driver.quit();
 
 ## 坑
 ### WebDriverError: no such session
-实例化 driver 失败,或者没有找到启动的 chrome 会导致此错误.
-> 将实例化 driver 和调用放一起避免了此错误.有可能实例是异步导致.
+发现自己 `hosts` 文件配置错误,导致无法查找到服务
+
 
 
 ## 参考阅读

@@ -44,7 +44,7 @@ test.describe('测试输入验证密码错误界面',function () {
     //用户名密码错误
     test.it('user login',function () {
 
-        var driver = new webdriver.Builder().forBrowser(Browser.FIREFOX).build();
+        var driver = new webdriver.Builder().forBrowser(Browser.CHROME).build();
         driver.manage().window().setPosition(INIT_POS.x,INIT_POS.y);
         driver.manage().window().setSize(DEVICE_SIZE.IPHONE6.w,DEVICE_SIZE.IPHONE6.h);
         driver.get(APP_URL);
