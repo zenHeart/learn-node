@@ -17,5 +17,9 @@ bower
 
 
 ## bower
+
 [package manager](http://andrewhfarmer.com/javascript-frontend-package-managers/)
+
 [bower installer](https://github.com/rquadling/bower-installer#rename-files-during-copy)
+
+[bower 迁移](https://bower.io/blog/2017/how-to-migrate-away-from-bower/)
