@@ -1,0 +1,20 @@
+{
+  "name": "gulp-test",
+  "version": "1.0.0",
+  "description": "测试 gulp 的使用",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocah"
+  },
+  "keywords": [
+    "gulp",
+    "test",
+    "node-modules"
+  ],
+  "author": "zenheart",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1"
+  }
+}
