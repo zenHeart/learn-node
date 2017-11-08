@@ -2,6 +2,8 @@
 # 自定义文件
 TODO.md
 .idea
+# 忽略编译成功目录
+dist/
 
 
 # sass

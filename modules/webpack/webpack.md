@@ -5,73 +5,40 @@ webpack
 ---
 
 ## 概述
-webpack 源于前端日益复杂的功能需求.
-复杂的导致对代码进行更精细的拆分.
-webpack 基于此痛点应运而生.
+webpack 是一个集成依赖打包工具.
+不同于 browserify 只管理 js 的文件依赖.
+webpack 可以管理所有的依赖关系.图片,css,js 等.
+webpack 基于配置文件.读取源文件执行一系列打包和编译任务.
+学习 webpack 的重点为:
+* 理解 webapck 的工作模式及配置方法
+* 学习各种基于 webpack 体系衍生的插件
 
-## 快速入门
+配置 webpack 文件的核心概念如下
 
-
-
-## 核心概念
-
-### entry
-入口点可以理解为初始加载位置.
-类似静态语言的 main 文件.
-或者树的根节点.决定这个加载入口.
-
-在 webpack 中为 `entry` 属性配置
-
-### output
-告诉 webpack 文件打包和集成的出口
-
-使用 `output` 属性控制
-
-### Loaders
-webpack 只识别 js.
-对于不同类型文件的加载和归并
-依靠 Loaders 来说明不同文件的依赖关系.
-
-使用 `module` 来说明 loader 的处理
-
-### Plugins
-使用 `plugins` 属性来自定义编译行为.
+* `entry`  配置入口文件,webpack 基于入口文件解析整个文件的依赖关系并进行编译(可以想象成 c 语言中读取 main 文件进行编译的过程)
+* `output` 控制文件的输出位置
+* `loaders` 处理文件的编译任务例如 scss 编译为 css,typescript 转义等
+* `plugins` 处理文件合并,压缩,混淆等
 
 
-# webpack-demo
-直接运行 `webpack src/index.js dist/bundle.js` 即可.
+## 范例
+整套流程完全参照[官方入门指南](https://webpack.js.org/guides/getting-started/)
+实现如下:
 
-webpack 根据 `import` 在 node_modules 查找加载模块.
-将 `index.js` 和模块文件合并到 `dist/bundle.js` 文件中.
 
-注意命令中相对路径是相对执行路径而言的**
-所以需要需要确保在项目根目录执行.
+参看 [demo](demo) 目录.
 
-也可在项目根目录使用 `webpack --config webpack.config.js` 编译项目
+1. 参看 `package.json` 创建项目
+2. 创建配置文件 `webpack.config.js`
+3. `npm run build` 会在目录 `dist` 目录生成 `bundle.js` 文件
+`index.html` 引入该文件即可.
 
-配置参数说明:
+配置文件为 [webpack.config.js](demo/webpack.config.js) 含义如下.
 
-* entry 预编译的输入文件
-* output 配置
-    * filename 输出文件名
-    * path 输出路径
-    
-也可仅使用 `webpack` 编译文件.
-它会在项目根目录搜索 `webpack.config.js` .
-使用 `--config` 来指定配置文件.
-
-进一步简化,在 npm 脚本中添加 `build` 选项即可
-
-```json
-{
-  "script":{
-    "build":"webpack"
-  }
-} 
-```
-使用 `npm run build` 执行此命令.
-
-webpack 只能识别和打包 js 文件.
+* `entry` 使用 `index.js` 文件作为入口 
+* `output` 设定输出文件名及输出路径
+ 
+目前 webpack 只能识别和打包 js 文件.
 为了实现`css,img` 等不同资源的打包.
 需要结合 `loader` 来实现此功能.
 
@@ -81,10 +48,31 @@ webpack 只能识别和打包 js 文件.
 * module 申明依赖
     * rules 解析文件后缀类型
     * use 使用的 loader 模块
+    
+载入图片安装 `file-loader`
+```bash
+npm i -D file-loader 
+```
+
+类似 css.添加查找规则及使用的 `loader` 重新编译即可.
+还可利用其他类型的 `loader` 加载不同类型的文件.
+
+加载 `xml` 和 `json` 文件为例
+安装对应加载器.
+```bash
+npm i -D xml-loader json-loader 
+```
+
+配置 `webpack.config.js` 解析上述文件.
+重新编译运行即可.
+
+> 重点是理解 loader 决定了对引入文件的解析规则.
+假设利用 file-loader 解析 test.json 则内容就会被解析为文件.
 
 
 
 
+* [代码分离](https://doc.webpack-china.org/guides/code-splitting)
 
 # 参考资料
 [webpack 使用经验](https://zhuanlan.zhihu.com/p/29161762?utm_source=wechat_session&amp;utm_medium=social)
