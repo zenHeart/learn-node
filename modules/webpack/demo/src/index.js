@@ -1,22 +1,16 @@
 import _ from 'lodash';
-import './style.css';
-import Loading from './loading.gif';
-import testXml from './test.xml';
-import testJson from './test.json';
+import printMs from './print.js'
 
 function component() {
     var element = document.createElement('div');
+    var btn = document.createElement('button');
 
-    element.innerHTML = _.join(['Hello', 'webpack'], ' ');
-    element.classList.add('hello');
+    element.innerHTML = _.join(['hello','webpack'],' ');
 
-    //添加 loading 图标
-    var myImg = new Image();
-    myImg.src = Loading;
+    btn.innerHTML = 'click me and check the console';
+    btn.onclick = printMs;
+    element.appendChild(btn);
 
-    element.appendChild(myImg);
-    console.log('输出 xml 数据',testXml);
-    console.log('输出 json 数据',testJson);
     return element;
 }
 

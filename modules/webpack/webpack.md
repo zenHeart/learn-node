@@ -69,7 +69,39 @@ npm i -D xml-loader json-loader
 > 重点是理解 loader 决定了对引入文件的解析规则.
 假设利用 file-loader 解析 test.json 则内容就会被解析为文件.
 
+为了避免手动在 `index.html` 中引入依赖.
+利用 [htmlwebpackplugin](https://webpack.js.org/plugins/html-webpack-plugin/) 解决此问题
+该插件会自动生成 `index.html` 文件并引入依赖.
+注意配置文件中 plugins 的变化
 
+```js
+module.exports = {
+    entry: {
+        app : './src/index.js',
+        print : './src/print.js',
+    },plugins:[
+        new HtmlWebpackPlugin({
+            title:'测试 plugins'
+        })
+    ],
+    output: {
+        filename: '[name].bundle.js',
+        path: path.resolve(__dirname, 'dist')
+    }
+};
+```
+
+为了清空 `dist` 多次编译后无用的旧文件.采用
+[clean-webpack-plugin](https://github.com/johnagan/clean-webpack-plugin)
+整理输出文件,在配置文件加入此插件.重新编译输出目录只会留下最新的编译结果.
+
+> 重点是理解插件用来处理 webpack 的输出
+
+
+
+## 坑
+###  Cannot find module 'webpack/lib/node/NodeTemplatePlugin'
+全局安装 `webpack` 时会出现此错误.利用 `npm i -D webpack` 本地安装解决此问题
 
 
 * [代码分离](https://doc.webpack-china.org/guides/code-splitting)
