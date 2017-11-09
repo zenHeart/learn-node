@@ -97,7 +97,58 @@ module.exports = {
 
 > 重点是理解插件用来处理 webpack 的输出
 
+编译会导致无法定位错误,利用 `source map` 可以解决此问题.
+只需在配置中加入 `devtool: 'inline-source-map'` 即可
+此时执行的错误会定向到源文件.
 
+为了避免文件修改后手动编译.使用 `watch` 模式实现自动编译.
+在 `package.json` scripts 添加开发检测模式.
+```json
+{
+"scripts": {
+  "dev":"webpack --watch"
+  }
+}
+``` 
+
+运行 `npm run dev` 此时会自动检查文件变化重新编译文件.
+
+为了避免手动打开浏览器观察文件变化.使用 `webpack-dev-server` 工具实现对文件的自动监测.
+安装工具 `npm i -D webpack-dev-server`,在配置中加入服务配置.
+添加 npm 脚本实现启动.
+
+```
+"start": "webpack-dev-server --open",
+```
+
+利用 `npm start` 打开服务该服务实现
+* 自动打开浏览器加载内容
+* 自动监听文件重新编译并刷新浏览器
+
+更详细的配置参见 [devserver](https://webpack.js.org/configuration/dev-server/)
+
+可以结合 `express` 等工具实现后端的完全模拟.
+
+
+## 典型配置
+结合 webpack 开发文档记录各典型配置
+
+### [基础配置](typical_config/basic)
+* 安装工具
+    * `clean-webpack-plugin` 清空输出目录无用的编译文件
+    * `css-loader` 解析 css 文件 loader
+    * `file-loader` 解析文件 loader
+    * `html-webpack-plugin` 自动生成 index.html,并插入依赖脚本的 plugins
+    * `json-loader` 解析 json 的 loader
+    * `style-loader` 解析 style 的loader
+    * `webpack-dev-server` 开发模式自动打开浏览器并检测文件变化的工具
+* 核心配置项
+    * entry 只有 index.js 为入口文件
+    * `devtool: 'inline-source-map'` 启动源码映射的功能,方便调试
+### [热加载](https://webpack.js.org/guides/hot-module-replacement/)
+普通模式下.页面资源的变化会导致整个内容重新刷新.
+最好的方式是指加载变化的内容.这样的机制称为热加载.
+目前没有用到这个技术!!!
 
 ## 坑
 ###  Cannot find module 'webpack/lib/node/NodeTemplatePlugin'
