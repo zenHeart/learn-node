@@ -4,13 +4,159 @@ webpack 入门
 
 ---
 
-## 
+## 重温基础概念
+### entry 
+定义文件编译的入口.
+```js
+//多页面应用,定义多个入口
+const config1 = {
+  entry: {
+    pageOne: './src/pageOne/index.js',
+    pageTwo: './src/pageTwo/index.js',
+    pageThree: './src/pageThree/index.js'
+  }
+}; 
+```
+
+### output
+定义编译后的内容写入位置.
+
+```js
+//单入口输出设定
+const config = {
+output: {
+ filename: 'bundle.js', //输出文件名
+ path: '/home/proj/public/assets' //输出位置
+}
+};
+
+/**
+* 多入口文件设定
+* name 指代入口设定的键名
+*/
+const multiConfig = {
+  entry: {
+    app: './src/app.js',
+    search: './src/search.js'
+  },
+  output: {
+    filename: '[name].js',
+    path: __dirname + '/dist'
+  }
+}
+```
+
+webpack 除了支持 name 等字段.其余编译生成的字段名详见
+[输出替代](https://webpack.js.org/configuration/output/#output-filename)
+
+### loaders
+用来解析不同类型的文件.使用的步骤为
+1. 安装对应的 loaders
+    ```shell
+    npm install --save-dev css-loader 
+    ```
+2. 添加对该文件的解析规则
+    ```js
+    module.exports = {
+           module: {
+             rules: [
+               { test: /\.css$/, use: 'css-loader' },
+             ]
+           }
+         };
+    ```
+
+配置 loaders 的方式有三种
+* 在配置文件中申明 loaders,更精细的配置如下
+    ```js
+        module.exports = {
+      module: {
+         rules: [
+           {
+             test: /\.css$/,
+             use: [
+               { loader: 'style-loader' },
+               {
+                 loader: 'css-loader',
+                 options: {
+                   modules: true
+                 }
+               }
+             ]
+           }
+         ]
+       }
+     }
+    ```
+    > 在 user 字段中细化使用方式
+* 内联模式,不用理解详情参见 [inline](https://webpack.js.org/concepts/loaders/#inline)
+* cli 模式,详见 [cli](https://webpack.js.org/concepts/loaders/#cli)
+
+> 只使用配置模式定义,便于项目的维护
+
+官方文档中 loaders 资料
+* [详细的 loaders 清单](https://webpack.js.org/loaders/)
+* [如何编写 loaders](https://webpack.js.org/contribute/writing-a-loader/)
+
+
+### 插件
+用来定义一系列的钩子任务进行执行.
+详细说明参见 [plugins](https://webpack.js.org/concepts/plugins/)
+
+其他和概念说明如下
+### 配置
+wepack 的配置文件通常命名为 `webpack.conf.js` 
+
+由于是 js 文件.可以当普通文件处理.使用依赖,执行函数等.
+但是作为配置文件. webpack 要求导出一个配置规则的对象给来解析规则.
+一个典型的配置文件格式如下: 
+```js
+var path = require('path');
+
+module.exports = {
+  entry: './foo.js',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'foo.bundle.js'
+  }
+};
+```
+
+跟详细的配置说明参见 [configuration](https://webpack.js.org/configuration/)
+
+
+### 模块体系
+webpack 编译基于模块的思想.将整个前端的开发
+转变为基于模块的开发体系.首先需要熟悉模块的运作机制.
+其次需要熟悉常用的各种基于模块的封装语言.
+内容详见 [模块](https://webpack.js.org/concepts/modules/)
+
+webpack 解析模块的规则详见 [模块解析](https://webpack.js.org/concepts/module-resolution/)
+
+### 目标
+为了实现不同环境的编译.例如区分服务端或浏览器端.
+使用 `target` 属性定义.详见  [target](https://webpack.js.org/concepts/targets/)
+
+
+### mainfest
+[mainfest](https://webpack.js.org/concepts/manifest/)
+
+完全没理解想要表达什么???
+
+### 热加载
+[热加载](https://webpack.js.org/concepts/hot-module-replacement/)
+
+这个需要升入理解热加载机制的原理及使用方式???
+
+
+
+
+
+
 
 ## 范例
 整套流程完全参照[官方入门指南](https://webpack.js.org/guides/getting-started/)
 实现如下:
-
-
 参看 [demo](demo) 目录.
 
 1. 参看 `package.json` 创建项目
