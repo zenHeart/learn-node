@@ -1,25 +1,10 @@
-webpack
+webpack 入门
 ===
 **前言:讲解 webpack 的使用**
 
 ---
 
-## 概述
-webpack 是一个集成依赖打包工具.
-不同于 browserify 只管理 js 的文件依赖.
-webpack 可以管理所有的依赖关系.图片,css,js 等.
-webpack 基于配置文件.读取源文件执行一系列打包和编译任务.
-学习 webpack 的重点为:
-* 理解 webapck 的工作模式及配置方法
-* 学习各种基于 webpack 体系衍生的插件
-
-配置 webpack 文件的核心概念如下
-
-* `entry`  配置入口文件,webpack 基于入口文件解析整个文件的依赖关系并进行编译(可以想象成 c 语言中读取 main 文件进行编译的过程)
-* `output` 控制文件的输出位置
-* `loaders` 处理文件的编译任务例如 scss 编译为 css,typescript 转义等
-* `plugins` 处理文件合并,压缩,混淆等
-
+## 
 
 ## 范例
 整套流程完全参照[官方入门指南](https://webpack.js.org/guides/getting-started/)
@@ -157,6 +142,24 @@ module.exports = {
 
 * [代码分离](https://doc.webpack-china.org/guides/code-splitting)
 
+
+## cli 
+测试 `env` 注入.
+webpack 目录下运行
+
+```bash
+webpack --env.test --config demo/testEnv.js
+```
+
+更详细的配置参见 [cli](https://webpack.js.org/api/cli/)
+
+env 回传入 exports 导出函数的首个参数.参见 `testEnv.js`
+
+
+
+
 # 参考资料
 [webpack 使用经验](https://zhuanlan.zhihu.com/p/29161762?utm_source=wechat_session&amp;utm_medium=social)
 [webpack 官方文档](https://webpack.js.org/guides/getting-started/)
+
+
