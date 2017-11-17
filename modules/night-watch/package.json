@@ -1,0 +1,27 @@
+{
+  "dependencies": {},
+  "scripts": {
+    "test:e2e": "./node_modules/.bin/nightwatch -c tests/e2e/nightwatch.config.js  tests/e2e/begin.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenHeart/node-lab.git"
+  },
+  "keywords": [
+    "node",
+    "npm",
+    "tool"
+  ],
+  "author": "zenheart",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zenHeart/node-lab/issues"
+  },
+  "homepage": "https://github.com/zenHeart/node-lab#readme",
+  "devDependencies": {
+    "chromedriver": "^2.33.2",
+    "cross-spawn": "^5.1.0",
+    "nightwatch": "^0.9.16",
+    "selenium-server": "^3.7.1"
+  }
+}

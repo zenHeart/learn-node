@@ -1,0 +1,27 @@
+{
+  "name": "node-lab",
+  "version": "0.0.0",
+  "description": "记录学习 node 的方方面面",
+  "main": "index.js",
+  "dependencies": {
+    "nightwatch": "^0.9.16"
+  },
+  "devDependencies": {},
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenHeart/node-lab.git"
+  },
+  "keywords": [
+    "node",
+    "npm",
+    "tool"
+  ],
+  "author": "zenheart",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zenHeart/node-lab/issues"
+  },
+  "homepage": "https://github.com/zenHeart/node-lab#readme"
+}
