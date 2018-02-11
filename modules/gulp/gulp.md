@@ -34,9 +34,9 @@ gulp
 
 详见 [gulp getting start](https://github.com/gulpjs/gulp/blob/master/docs/getting-started.md)
 
-## [api](https://github.com/gulpjs/gulp/blob/master/docs/API.md)
+## [api](https://github.com/gulpjs/gulp/blob/master/docs/DEVICE_API.md)
 
-###  [gulp.src](https://github.com/gulpjs/gulp/blob/master/docs/API.md#gulpsrcglobs-options)
+###  [gulp.src](https://github.com/gulpjs/gulp/blob/master/docs/DEVICE_API.md#gulpsrcglobs-options)
 将文件转换为流.
 文件匹配模式支持 [node-glob](https://github.com/isaacs/node-glob) 规则
 使用如下
@@ -52,13 +52,13 @@ gulp.src('client/js/**/*.js', { base: 'client' })
 > 重点是理解利用 src 来查找匹配需要处理的文件.
 匹配模式符合 node-glob 规则.
 
-###  [gulp.dest](https://github.com/gulpjs/gulp/blob/master/docs/API.md#gulpdestpath-options)
+###  [gulp.dest](https://github.com/gulpjs/gulp/blob/master/docs/DEVICE_API.md#gulpdestpath-options)
 将处理的流输出到指定位置.
 
-### [gulp.task](https://github.com/gulpjs/gulp/blob/master/docs/API.md#gulptaskname--deps--fn)
+### [gulp.task](https://github.com/gulpjs/gulp/blob/master/docs/DEVICE_API.md#gulptaskname--deps--fn)
 注册一个任务.
 
-### [gulp.watch](https://github.com/gulpjs/gulp/blob/master/docs/API.md#gulpwatchglob--opts-tasks-or-gulpwatchglob--opts-cb)
+### [gulp.watch](https://github.com/gulpjs/gulp/blob/master/docs/DEVICE_API.md#gulpwatchglob--opts-tasks-or-gulpwatchglob--opts-cb)
 观察文件变化后启动一个任务.
 
 ## 使用范例

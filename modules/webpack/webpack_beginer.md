@@ -222,3 +222,6 @@ entry:() => './demo'
 更详细的配置参见 [entry](https://webpack.js.org/configuration/entry-context/)
 
 ### output
+详见输出配置 [output](https://webpack.js.org/configuration/output/)
+
+###

@@ -1,0 +1,21 @@
+{
+  "name": "pug-demo",
+  "version": "1.0.0",
+  "description": "讲解 pug 的使用",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "mocha",
+    "start":"supervisor src/index.js"
+  },
+  "keywords": [
+    "pug",
+    "template",
+    "enging"
+  ],
+  "author": "zenheart",
+  "license": "ISC",
+  "dependencies": {
+    "koa": "^2.4.1",
+    "pug": "^2.0.0-rc.4"
+  }
+}

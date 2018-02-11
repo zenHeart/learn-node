@@ -24,7 +24,7 @@ npm i -g patdoc
 
 3. 运行 `apidoc -i demo/ -o apidoc/`
 
-在项目根目录下即生成 API 文档.
+在项目根目录下即生成 DEVICE_API 文档.
 
 ## 命令行详解
 

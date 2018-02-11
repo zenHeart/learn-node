@@ -131,7 +131,31 @@ todo 文件结构详细说明如下
 * api 存放项目 api 说明 
 * frame 存放项目架构解说等图例说明 
 
- 
+
+### 版本控制
+
+#### [nvm](https://github.com/creationix/nvm)
+
+安装参考 [git 安装](https://github.com/creationix/nvm)
+如要升级使用 [zsh-nvm 插件](https://github.com/lukechilds/zsh-nvm)
+
+> 注意不要使用 brew 安装可能存在问题
+
+常用命令
+
+```bash
+# 升级 nvm
+nvm upgrade
+
+# 安装最新的 node 
+nvm install node
+
+```
+
+
+
+* [n](https://github.com/tj/n)
+
 
 # 参考
 

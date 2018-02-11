@@ -7,7 +7,7 @@
 
 ## 目录结构
 * `api`
-    node 原生 API 学习,基于 [node 官方文档](https://nodejs.org/dist/latest-v8.x/docs/api/documentation.html) 讲解 node 使用
+    node 原生 DEVICE_API 学习,基于 [node 官方文档](https://nodejs.org/dist/latest-v8.x/docs/api/documentation.html) 讲解 node 使用
 * `modules`
     讲解基于 npm 包管理系统的各种模块学习,包括 npm 本身
 * `practice`

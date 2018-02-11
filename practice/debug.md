@@ -33,18 +33,17 @@ node 调试
  
 
 ## 远程调试
-**debug 模式**
-1. 远程服务器使用 `node --debug-brk <script_name>` 运行应用
-2. 本地使用 `node debug  <remot_ip>:5858` 连接远程服务器
-3. 
+1. 远程服务器开启调试
+```bash
+node --inspcet=0.0.0.0:9229 index.js 
+```
 
-**inspect 模式**
+2. 本地打开 [chrome-inpect](chrome://inspect)
+点击 `config` 输入远程调试地址 `ip:9229`
 
-1. 安装 `npm install -g node-inspector ` 
-2. 远程服务器开启 inspect 服务 `node-inspector`
-3. 开启调试 `node --debug-brk <script_name>`
-4. 远程访问 `<remote_ip>:8080/?port=5858` 即可
+3. 点击 `Open dedicated DevTools for Node` 打开调试界面即可远程调试
 
+* [远程调试资料](https://stackoverflow.com/questions/12440169/how-do-you-debug-a-node-js-server-running-with-chrome-webkit-as-the-remote-debug)
 
 
 ## 使用内置调试器

@@ -1,0 +1,11 @@
+{
+  "apps" : [{
+    "name"        : "test-app",
+    "script"      : "/Users/lockepc/code/github/node-lab/modules/config/app.js",
+    "instance_var": "INSTANCE_ID",
+    "env": {
+      "NODE_ENV": "production",
+      "NODE_CONFIG_DIR": "/Users/lockepc/code/github/node-lab/modules/config/config/"
+    }
+  }]
+}

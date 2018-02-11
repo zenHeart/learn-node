@@ -240,7 +240,7 @@ winston.info('Hello again distributed logs');
     * configure 重新配置日志对象的 transport
     * setLevels 设置日志级别
 
-log 函数的语法如下 `function log (level, msg, [meta], callback)`
+log 函数的语法如下 `function log (level, errMsg, [meta], callback)`
 
 * level 日志输出级别
 * message 支持 [util.format](https://nodejs.org/api/util.html#util_util_format_format_args) 语法
@@ -592,9 +592,9 @@ var logger = new (winston.Logger)({
 });
 
 
-logger.on('logging', function (transport, level, msg, meta) {
+logger.on('logging', function (transport, level, errMsg, meta) {
    //注意这里没有使用 log 输出,避免回调形成闭环
-   console.log('info','receive transport:%j level:%d,msg:%s,meta:%j',transport, level, msg, meta);
+   console.log('info','receive transport:%j level:%d,errMsg:%s,meta:%j',transport, level, errMsg, meta);
 });
 
 
@@ -664,7 +664,7 @@ var winston = require('winston');
 var util = require('util');
 var logger = new winston.Logger({
     //重新定义 meta 的输出格式
-    rewriters: [function (level, msg, meta) {
+    rewriters: [function (level, errMsg, meta) {
         return util.inspect(meta,{
             depth:1,
             colors:true
@@ -673,8 +673,8 @@ var logger = new winston.Logger({
     }],
     
     //重新定义 filters 的输出格式
-    filters:   [function (level, msg, meta) {
-        return 'new' + msg;
+    filters:   [function (level, errMsg, meta) {
+        return 'new' + errMsg;
     }],
     transports:[
         new winston.transports.Console({
@@ -740,7 +740,7 @@ var CustomLogger = winston.transports.CustomLogger = function (options) {
 //
 util.inherits(CustomLogger, winston.Transport);
 
-CustomLogger.prototype.log = function (level, msg, meta, callback) {
+CustomLogger.prototype.log = function (level, errMsg, meta, callback) {
     //
     // Store this message and metadata, maybe use some custom logic
     // then callback indicating success.
@@ -770,8 +770,8 @@ winston 利用 logger 实例管控日志，logger 实例上可挂载多个 trans
 
 **logger** 实例提供的重要方法和属性有
 
-`log (level, msg, [meta], callback)` 根据实例上挂载的不同 transport 分别打印输出
-`profile(id, [msg, meta, callback])` 测试函数性能
+`log (level, errMsg, [meta], callback)` 根据实例上挂载的不同 transport 分别打印输出
+`profile(id, [errMsg, meta, callback])` 测试函数性能
 ` query (options, callback)` 根据实例上挂载的不同 transport 分别打印输出
 `add (transport, [options])` 在 logger 上挂载 tranports 实例，一般一个 logger 实例只支持不同的 transports 文件除外
 `filters` 格式化消息

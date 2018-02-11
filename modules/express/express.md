@@ -39,7 +39,7 @@ express
 
 
 ## 常用场景
-### 建立 RestFul API 的服务器
+### 建立 RestFul DEVICE_API 的服务器
 
 ### 建立静态资源文件服务器
 > 快速入门

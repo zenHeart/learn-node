@@ -3,16 +3,16 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
-subtitle:
-description:
-author: John Doe
-language:
-timezone:
+title: zenheart
+subtitle: 禅心编码
+description: 个人小站
+author: zenHeart
+language: zh-CN
+timezone: Asia/Shang_Hai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: http://blog.zenheart.site
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
