@@ -27,7 +27,7 @@ examples
 
 配置文件为 [webpack.config.js](demo/webpack.config.js) 含义如下.
 
-* `entry` 使用 `index.js` 文件作为入口 
+* `entry` 使用 `restify.js` 文件作为入口 
 * `output` 设定输出文件名及输出路径
  
 目前 webpack 只能识别和打包 js 文件.
@@ -69,7 +69,7 @@ npm i -D xml-loader json-loader
 ```js
 module.exports = {
     entry: {
-        app : './src/index.js',
+        app : './src/restify.js',
         print : './src/print.js',
     },plugins:[
         new HtmlWebpackPlugin({
@@ -135,7 +135,7 @@ module.exports = {
     * `style-loader` 解析 style 的loader
     * `webpack-dev-server` 开发模式自动打开浏览器并检测文件变化的工具
 * 核心配置项
-    * entry 只有 index.js 为入口文件
+    * entry 只有 restify.js 为入口文件
     * `devtool: 'inline-source-map'` 启动源码映射的功能,方便调试
 ### [热加载](https://webpack.js.org/guides/hot-module-replacement/)
 普通模式下.页面资源的变化会导致整个内容重新刷新.

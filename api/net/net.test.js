@@ -1,4 +1,4 @@
-const chai = require('chai');
+const chai = require('chai/index');
 const {assert,should,expect} = chai;
 const net = require('net');
 const {Server} = net;

@@ -74,7 +74,7 @@ linux 的选项一般具有如下特点
 > linux 环境
 
 1. 创建 `npm_cli` 文件夹
-2. 在该文件夹下创建`package.json` 和 index.js 文件。
+2. 在该文件夹下创建`package.json` 和 restify.js 文件。
 各文件内容如下：
 
 * package.json 文件
@@ -88,12 +88,12 @@ linux 的选项一般具有如下特点
   "author": "your_name",
   "license": "Apache-2.0",
   "bin": {
-    "ncli":"./index.js"
+    "ncli":"./restify.js"
   }
 } 
 ```    
     
-* index.js 文件
+* restify.js 文件
 
 ```js
 practice
@@ -236,7 +236,7 @@ console.log(`process.argv: ${process.argv}`);
 在 node 中可以使用，可以利用 [process.argv](https://nodejs.org/dist/latest-v7.x/docs/api/process.html#process_process_argv0)
 来获取命令行参数。
 
-将 `index.js` 脚本中的内容更改如下。
+将 `restify.js` 脚本中的内容更改如下。
 
 ```js
    cosole.log(process.agrv); 

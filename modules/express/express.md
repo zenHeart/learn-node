@@ -35,7 +35,7 @@ express
     ```
 
 ### 路由方法回调的层叠使用
-[route handle](http://expressjs.com/en/guide/routing.html)、
+[route handle_client](http://expressjs.com/en/guide/routing.html)、
 
 
 ## 常用场景
@@ -45,7 +45,7 @@ express
 > 快速入门
 1.  在 app 路径下新建 `static` 文件，存放`test.txt`文件，
 文件中存入`hello world`
-2. 在 app 路径下新建 `index.js` 输入如下代码
+2. 在 app 路径下新建 `restify.js` 输入如下代码
 ```js
    const SERVER_PORT = 14213;
    const STATIC_PATH = 'static';
@@ -71,7 +71,7 @@ express
 > 快速入门
 
 1. 定义模板引擎
-新建`index.js`写入如下内容
+新建`restify.js`写入如下内容
 ```js
     const SERVER_PORT = 14213;
     
@@ -104,7 +104,7 @@ express
     #title#
     #message#
 
-3. 运行`index.js`文件，访问`localhost://14213/tmp`。
+3. 运行`restify.js`文件，访问`localhost://14213/tmp`。
 
 > 模板讲解
 

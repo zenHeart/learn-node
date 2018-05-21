@@ -21,21 +21,25 @@ node 调试
 * 使用 inspect 进行调试
 
 # node inspect
-1. 安装 chrome `NIM` 插件,当调试 node 时会自动打开调试界面.
+1. 安装 chrome `NIM` 插件
+2. 进入 [chrome 扩展界面](chrome://extensions/)
+3. 点击 backgroud.html 进入监听界面
 2. 利用 `node --inspect-brk <script_name>` 启动脚本
 3. 此时可以直接在 chrome 中调试代码.
+
 
 若无法自动启动,在启动调试后,把控制台输出的 url 粘贴到 chrome 浏览器即可开启调试.
 
 **使用 phpstorm 调试**
 
 在需要调试的界面,点击 `run->debug` 即可.
- 
+
+注意配置 debug 为 node 模式. 
 
 ## 远程调试
 1. 远程服务器开启调试
 ```bash
-node --inspcet=0.0.0.0:9229 index.js 
+node --inspcet=0.0.0.0:9229 restify.js 
 ```
 
 2. 本地打开 [chrome-inpect](chrome://inspect)

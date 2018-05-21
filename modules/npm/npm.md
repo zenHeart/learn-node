@@ -137,7 +137,7 @@ npm 的安装包可分为本地和全局两种.
 
 ```json
 {
-    "main": "index.js",
+    "main": "restify.js",
     "scripts": {
     //npm install 命令钩子    
     "preinstall": "echo 'preinstall: npm install 安装依赖前触发'",
@@ -311,7 +311,7 @@ editor|设置 npm 默认打开的编辑器|
 2. 什么是 module
     1. 模块可以被 package 加载有三种类型
         * 包含 package.json 和 main wenjian 文件的路径
-        * 包含 index.js 的文件
+        * 包含 restify.js 的文件
         * 一个 js 的脚本文件
     2. 有一些模块是`cli 的可执行命令`他们并不是模块
     3. 模块是一个组件存放在 node_modules 文件夹下，而包含 package.json 的文件夹

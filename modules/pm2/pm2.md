@@ -24,8 +24,8 @@ pm2 update
 进入项目根目录执行
 
 ```bash
-# 启动 app.js
-pm2 start app.js 
+# 启动 restify.js
+pm2 start restify.js 
 ```
 
 启动后 pm2 以表格信息显示进程信息.

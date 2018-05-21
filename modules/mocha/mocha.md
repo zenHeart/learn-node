@@ -1,3 +1,4 @@
+
 mocha
 ===
 ---
@@ -257,10 +258,16 @@ mocha 'test/**/*.@(js|jsx)'   //node 通配符
 ``` 
 
 ## 使用问题
-* 无法循环进行单元测试
-    理想情况下,希望只输入测试数据,然让单元测试循环执行.
-    结果无法显示单元测试.
-    [mocha 使用](http://www.ruanyifeng.com/blog/2015/12/a-mocha-tutorial-of-examples.html)
+### 无法循环进行单元测试
+理想情况下,希望只输入测试数据,然让单元测试循环执行.
+结果无法显示单元测试.
+[mocha 使用](http://www.ruanyifeng.com/blog/2015/12/a-mocha-tutorial-of-examples.html)
+
     
+### 指定测试文件和格式
+参看  
+* [node-golb](https://github.com/isaacs/node-glob#glob-primer)  
+* [mocha.opts](https://mochajs.org/#mochaopts)
+
 ## 参考资料
 [mocha wiki](https://github.com/mochajs/mocha/wiki)

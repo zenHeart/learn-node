@@ -28,15 +28,15 @@ supervisor <js_file>
 2. 利用 -i 忽略对某些文件的监听
 
 ```bash
-# 执行 index.js 文件，同时忽略对 node_modules,log 文件夹的监听
-supervisor -i  node_modules,log index.js
+# 执行 restify.js 文件，同时忽略对 node_modules,log 文件夹的监听
+supervisor -i  node_modules,log restify.js
 ```
 
 注意该模式支持 `glob` 的文件筛选。
 
 ```bash
-# 执行 index.js 文件，同时忽略对 .log 为后缀的文件监听。
-supervisor -i *.log index.js 
+# 执行 restify.js 文件，同时忽略对 .log 为后缀的文件监听。
+supervisor -i *.log restify.js 
 ```
 
 再利用 supervisor 启动脚本时。

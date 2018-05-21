@@ -11,9 +11,9 @@ webpack 入门
 //多页面应用,定义多个入口
 const config1 = {
   entry: {
-    pageOne: './src/pageOne/index.js',
-    pageTwo: './src/pageTwo/index.js',
-    pageThree: './src/pageThree/index.js'
+    pageOne: './src/pageOne/restify.js',
+    pageTwo: './src/pageTwo/restify.js',
+    pageThree: './src/pageThree/restify.js'
   }
 }; 
 ```
@@ -36,7 +36,7 @@ output: {
 */
 const multiConfig = {
   entry: {
-    app: './src/app.js',
+    app: './src/restify.js',
     search: './src/search.js'
   },
   output: {
