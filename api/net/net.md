@@ -7,3 +7,8 @@
 
 > 注意不赋值时会产生 ipv6 的地址,若保证为 ipv4,可以给 host
 赋值为 ipv4 地址.
+
+### socket.localAddress
+
+注意这些值在 `connect` 触发后才被赋予.
+否则为空.
