@@ -84,3 +84,143 @@ webpack 支持将代码打包到不同的运行环境.
 
 ### [Hot Module Replacement](https://webpack.js.org/concepts/hot-module-replacement/)
 webpack 支持热更新
+
+## API 
+### [introduction](https://webpack.js.org/api/)
+* [cli](https://webpack.js.org/api/#cli) 命令行工具
+* [module](https://webpack.js.org/api/#module) 模块
+* [node](https://webpack.js.org/api/#module) 采用 node 模式调用 webpack
+* [loaders](https://webpack.js.org/api/#loaders) 转换资源
+* [plugins](https://webpack.js.org/api/#plugins) 在编译过程中挂载任务
+
+### [cli](https://webpack.js.org/api/cli/)
+为了简化配置,所有命令行选项,可以利用 `webpack.config.js` 文件进行配置.
+有两个命令行工具.
+* [webpack-cli](https://github.com/webpack/webpack-cli) 完全的命令行工具
+* [webpack-command](https://github.com/webpack/webpack-command) 完全的命令行工具
+
+可以采用配置文件,或命令行模式,运行 webpack
+```bash
+# 指定配置文件的模式
+# 默认webpack 会查找 根目录下的 webpack.config.js 的文件
+webpack [--config webpack.config.js] 
+
+# 配置项模式
+webpack <entry> [entry] -o <output>
+```
+
+> **info**
+> 命令行传参比配置文件拥有更高的优先级.
+相同配置会被命令行的值覆盖
+
+###  [common-options](https://webpack.js.org/api/cli/#common-options)
+可以利用分析工具,解析 webpack 编译结果.
+1. `webpack --json` 将编译结果转换为 json 文件
+2. 导入如下工具查看效果
+    * [analyse tool](https://webpack.github.io/analyse/)
+    * [webpack-visualizer](https://chrisbateman.github.io/webpack-visualizer/)
+    * [webpack-bundle-analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer)
+
+### [environment options](https://webpack.js.org/api/cli/#environment-options)
+可以利用 env 配置环境变量.
+```bash
+webpack --env prod # 等效 "prod" 
+webpack --env.prod # 等效 {prod:true} 
+webpack --env.prod=1 # 等效 {prod:1}
+webpack --env.prod=1 --env min # 等效 {prod:1,"min"}
+```
+
+### [config options](https://webpack.js.org/api/cli/#config-options)
+配置文件的设定
+
+#### [output options](https://webpack.js.org/api/cli/#output-options)
+输出选项设定
+
+#### [debug options](https://webpack.js.org/api/cli/#debug-options)
+提示选项设定
+
+
+#### [module options](https://webpack.js.org/api/cli/#module-options)
+模块选项设定
+
+#### [watch options](https://webpack.js.org/api/cli/#watch-options)
+监测文件变化设定
+
+#### [optimize options](https://webpack.js.org/api/cli/#optimize-options)
+优化设定
+
+#### [resolve options](https://webpack.js.org/api/cli/#resolve-options)
+解析设定
+
+...
+
+## [sats data](https://webpack.js.org/api/stats/)
+详细描述采用 `webpack --json` 输出的对象含义.
+
+## [node.js api](https://webpack.js.org/api/node/)
+处理使用 `webpack` 命令行工具编译文件.
+可以使用 webpack 对象完成编译流程.核心步骤如下
+1. `npm i -D webpack`
+2. 引用 webpack 并实例化
+```js
+const webpack = require('webpack'); 
+const compiler = webpack({
+    //配置文件
+})
+```
+3. 调用方式有如下几种
+    1. 在实例化时,第二个参数传入回调
+    
+    ```js
+    webpack({
+        //传入配置参数
+    },(err,status) => {
+        //回调模式获取结果
+    }) 
+    ```
+
+    2. 调用返回的 compiler.run 方法
+    
+    ```js
+    compiler = webpack({
+        //传入配置参数
+    });
+    compiler.run((err,status) => {
+                     //回调模式获取结果
+    });
+    ```
+
+    3. 采用监听模式运行编译
+    
+    ```js
+    compiler = webpack({
+        //传入配置参数
+    });
+    compiler.watch({
+       //传入监听配置
+    },(err,status) => {
+                     //回调模式获取结果
+    });
+    ```
+
+核心的 [status 对象](https://webpack.js.org/api/node/#stats-object)
+详见官网.
+
+### [热更新](https://webpack.js.org/api/hot-module-replacement/)
+详见文档,提供的热更新接口
+
+### [loader api ](https://webpack.js.org/api/loaders/)
+loader 是一个 npm 模块,将输入处理后产生新的输出.
+可以等同为 linux 管道的效果.
+
+第一个 loader 接收一个文件资源,最后一个loader输出字符串或者 `buffer` 对象.
+loader 尽量写成异步.
+
+
+
+
+
+## contribute
+### 编写 loader
+
+
