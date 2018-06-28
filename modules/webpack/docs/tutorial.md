@@ -85,6 +85,16 @@ webpack 支持将代码打包到不同的运行环境.
 ### [Hot Module Replacement](https://webpack.js.org/concepts/hot-module-replacement/)
 webpack 支持热更新
 
+
+## [configuration](https://webpack.js.org/configuration)
+配置项,详细讲解 webpack 的配置功能.
+
+### [entry and context](https://webpack.js.org/configuration/)
+入口配置,决定 webpack 如何编译查找资源.
+* `context`设定主文件的基础路径
+* `entry` 解析的主文件,支持传入多个文件
+
+
 ## API 
 ### [introduction](https://webpack.js.org/api/)
 * [cli](https://webpack.js.org/api/#cli) 命令行工具
@@ -222,5 +232,9 @@ loader 尽量写成异步.
 
 ## contribute
 ### 编写 loader
+loader 是一个函数模块.用于将文件内容进行转换.
+函数的执行环境,可以调用 [loader api](https://webpack.js.org/api/loaders/).
+
+
 
 
