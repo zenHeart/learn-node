@@ -1,3 +1,4 @@
+
 ---   
 title: npm   
 tag: npm   
@@ -187,45 +188,16 @@ npm install -g @angular/cli
 `@<scope>` 表示组织仓库的地址指代.
 详情参见 [scope](https://docs.npmjs.com/misc/config#scope)
 
-### 删除依赖包
+### npm uninstall
 方法同上只需要把`install` 换成`uninstall`   
-### 更新依赖包
+
+### npm update
 利用`update`指令进行更新，方法同上。   
 
-
-## 创建属于你的 NPM 模块
-1. 创建 NPM 用户
-去 [NPM 官网注册](https://www.npmjs.com/)
-或者利用`npm adduser` 创建用户。只需填入
-用户名，密码，邮箱即可。
-
-验证是否注册成功进 <https://npmjs.com/~>
-
-2. 登录账户
-
-`npm valid` 输入用户名，密码，邮箱登录。
-
-3. 提交包
-
-`npm publish` 提交后可以去 **https://npmjs.com/package/<package_name>** 查看。
- 
-利用 `.gitignore` 或 `.npmignore` 忽略文件。
-主页忽略规则详见 [npm developers](https://docs.npmjs.com/misc/developers)
-
-`readme` 将会显示在仓库的主页。
-
-4. 更新
-
-`npm version <update_type>` 类型参照语义化版本规则。
-
-* patch 补丁
-* minor 更新
-* major 升级
-
-该命令会自动更改，package.json 中的 version 字段。
-更新完版本后重新提交即可。
-
-npm 包开发说明。
+### npm link
+1. 本地采用 npm link 会创建一个连接指向,全局包位置.
+地址为 `{prefix}/lib/node_modules/<package>`,
+此外会创建 bin 对应的连接到 `{prefix}/bin/{name}`
 
 
 
