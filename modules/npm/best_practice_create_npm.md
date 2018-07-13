@@ -71,7 +71,7 @@ tar -tf <压缩包名称>
 2. 建立工程项目和本地包的连接
     **确保在项目目录下**
     ```bash
-    npm link <本地包的路径> 
+    npm link <仓库名|本地包地址> 
     ```
     该指令会在项目的 node_modules 常见到全局本地包的软链接
 
@@ -95,7 +95,9 @@ tar -tf <压缩包名称>
     npm install <本地包打包地址>
     ```
 
-
+具体实现参考
+* [在项目中使用本地包](https://egghead.io/lessons/javascript-test-npm-packages-locally-in-another-project-using-npm-link)
+* [如何测试 npm 包](https://medium.com/@the1mills/how-to-test-your-npm-module-without-publishing-it-every-5-minutes-1c4cb4b369be)
 
 
 ## 参考资料
