@@ -21,7 +21,8 @@
     "style-loader": "^0.18.2",
     "webpack-dev-server": "^2.11.1"
   },
-  "scripts": {},
+  "scripts": {
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zenHeart/node-lab.git"

@@ -1,3 +1,4 @@
+
 pm2
 ===
 **前言:讲解 pm2 的使用**
@@ -269,8 +270,78 @@ test="hello" NODE_ENV='deploy' pm2 start charger.js
 中定义的选项大部分在 `process.env` 中都可见.
 
 ## 环境部署
+1. 在项目根目录配置 `ecosystem.json` 文件
+也可利用 `pm2 ecosystem` 创建配置文件
+
+    ```json
+    {
+       "apps" : [{
+          "name" : "HTTP-API",
+          "script" : "http.js"
+       }],
+       "deploy" : {
+         // "production" is the environment name
+         "production" : {
+           "user" : "ubuntu",
+           "host" : ["192.168.0.13"],
+           "ref"  : "origin/master",
+           "repo" : "git@github.com:Username/repository.git",
+           "path" : "/var/www/my-repository",
+           "post-deploy" : "npm install; grunt dist"
+          }
+       }
+    } 
+    ```
+
+2. 配置完成后执行如下语句
+    
+    ```bash
+    # 在部署服务器初始化项目 
+    # 该命令会在远程 path 目录拉取设定的仓库内容,
+    pm2 deploy production setup
+    # 更新远程版本
+    pm2 deploy production update
+    # 回退部署到上一个版本
+    pm2 deploy production revert 1
+    # 在远程执行命令
+    pm2 deploy production exec "pm2 reload all"
+    ```
+    
+    > 测试时发现,有些命令执行后显示的是本地结果!!!
 
 
+常用命令举例如下
+
+```bash
+# 命令格式为 pm2 deploy <配置文件> <环境> <子命令> 
+# 初始化产品版
+pm2 deploy ecosystem.config.js production setup   
+# 更新远程版本到最新提交
+pm2 deploy ecosystem.config.js production update   
+# 回退远程版本
+pm2 deploy ecosystem.config.js production revert <哈希值>   
+# 显示当前版本
+pm2 deploy ecosystem.config.js production curr[ent]    
+# 显示之前版本
+pm2 deploy ecosystem.config.js production prev[ious]
+# 显示之前发布的版本
+pm2 deploy ecosystem.config.js production list
+# 部署到 [ref] ,ref 为文件中 ref 配置项
+pm2 deploy ecosystem.config.js production [ref]
+```
+
+* **setup** 初始化远程部署地址
+* **update** 拉取最新的远程仓库版本
+* **revert [n]** 回退到某一个版本
+* **curr[ent]** 回退到某一个版本
+
+> 可以嵌入上述配置到 package.json 的 `apps` 和 `deploy` 配置中
+
+
+参考资料.
+
+* [pm2 deploy blog](https://keymetrics.io/2014/06/25/ecosystem-json-deploy-and-iterate-faster/)
+* [旧版 deploy 说明](http://pm2.keymetrics.io/docs/usage/deployment/)
 
 ## 坑
 * 在 zsh 的环境下, pm2 正则启动无法工作

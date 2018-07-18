@@ -5,7 +5,8 @@ npm 包最佳实践
 
 ------
 
-
+##  todo
+* [ ] [npm 最佳实践工具集](https://hackernoon.com/these-6-essential-tools-will-maintain-your-npm-modules-for-you-4cbbee88e0cb)
 
 ## 创建属于你的 NPM 模块
 1. 创建 NPM 用户
@@ -66,19 +67,19 @@ tar -tf <压缩包名称>
     ```bash
     npm link
     ```
-    该命令会创建本地包,到全局 node_moudles 的系统软链接
+    该命令会创建本地包,到全局 node_modules 的系统软链接
     
 2. 建立工程项目和本地包的连接
     **确保在项目目录下**
     ```bash
     npm link <仓库名|本地包地址> 
     ```
-    该指令会在项目的 node_modules 常见到全局本地包的软链接
+    该指令会在项目的 node_modules 创建到全局本地包的软链接
 
-    通过上述方式就实现了,在项目中使用本地包,并且本地包的原理会实时反映到项目中.
+    通过上述方式就实现了,在项目中使用本地包,并且本地包的变化会实时反映到项目中.
 
 
-该原理是应为创建了两个软连接.执行逻辑如下.
+该原理是因为创建了两个软连接.执行逻辑如下.
 
 1. require 去 node_modules 中查找模块
 2. node_modules 的模块指向全局软连接
