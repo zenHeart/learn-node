@@ -323,6 +323,8 @@ yourproject --->A
 包的安装按照字典排序。
 ````
 
+## [配置](https://docs.npmjs.com/files/folders)
+
 
 
 
