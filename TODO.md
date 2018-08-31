@@ -1,3 +1,4 @@
+* [ ] 学习 [unlish](http://netflix.github.io/unleash/) 使用
 * [ ] 完善 npx 工具的使用
 * [ ] 可以参考 webpack 测试用例,将配置项写成测试进行验证
 * [ ] 学习 [prettier](https://prettier.io/),结合 eslint 可以解决代码规范的问题,

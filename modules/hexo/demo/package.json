@@ -5,6 +5,9 @@
   "hexo": {
     "version": "3.3.9"
   },
+  "scripts":{
+    "blog:dev":"npx hexo server"
+  },
   "dependencies": {
     "hexo": "^3.2.0",
     "hexo-generator-archive": "^0.1.4",

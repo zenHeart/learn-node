@@ -290,7 +290,7 @@ editor|设置 npm 默认打开的编辑器|
     可以理解为利用这些组件创建的包，当你提交后，对于别人相当于新的组件。
 
 3. 理解模块依赖
- 详细资料请看[NPM 官网](https://docs.npmjs.com/how-npm-works)
+ 详细资料请看[NPM 官网](http://npm.github.io/how-npm-works-docs/index.html)
  下面简要讲解 NPM v3 的包管理逻辑
 ```
 // 1. 你的项目依赖 A 和 B 的模块
@@ -322,10 +322,3 @@ yourproject --->A
 利用这种方式可以极大地减小，依赖包之间的嵌套关系，减小树的深度。
 包的安装按照字典排序。
 ````
-
-
-
-
-
-
-
