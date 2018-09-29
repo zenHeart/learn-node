@@ -203,6 +203,89 @@ npm install -g @angular/cli
 
 
 
+
+
+1. 什么是 package
+    1. 包含用 package.json 描述的代码文件夹
+    2. 利用 gzip tarball 对 1 进行打包
+    3. 一个 URL 指向 2 对应的包
+    4. <name>@<version> 的名称指向注册的 URL 地址
+    5. 利用<name>@<tag> 指向 4 中名称
+    6. 利用 <name> 指向最近的 5
+    7. 一个 git 当克隆来源 1 的内容时
+
+2. 什么是 module
+    1. 模块可以被 package 加载有三种类型
+        * 包含 package.json 和 main wenjian 文件的路径
+        * 包含 restify.js 的文件
+        * 一个 js 的脚本文件
+    2. 有一些模块是`cli 的可执行命令`他们并不是模块
+    3. 模块是一个组件存放在 node_modules 文件夹下，而包含 package.json 的文件夹
+    可以理解为利用这些组件创建的包，当你提交后，对于别人相当于新的组件。
+
+3. 理解模块依赖
+ 详细资料请看[NPM 官网](https://docs.npmjs.com/how-npm-works)
+ 下面简要讲解 NPM v3 的包管理逻辑
+```
+// 1. 你的项目依赖 A 和 B 的模块
+yourproject --->A
+            └-->B
+
+// 2. A 和 B 依赖 C 的版本 CV1 和 CV2 NPM 会根据 A 和 B 中的 package.json 自动安装依赖
+yourproject --->A-->CV1
+            └-->B-->CV2
+            
+// 3. 假设此时你更新了 A 和 B ,A 对 C 的依赖升级为最新版 的 C.
+yourproject --->A
+            |-->B-->CV2 
+            |-->C
+            
+// 4. 假设此时  D 需要 B 和 CV3 的依赖,包关系如下
+yourproject --->A
+            |-->B-->CV2
+            |-->C
+            └-->D-->CV3
+            
+// 5. 假设此时所有安装包和依赖更新到最新版
+yourproject --->A
+            |-->B
+            |-->C
+            └-->D
+
+// 总结可以看出，所有依赖都是独立在每个模块下，当依赖中的包变为最新时，会独立出来，
+利用这种方式可以极大地减小，依赖包之间的嵌套关系，减小树的深度。
+包的安装按照字典排序。
+````
+
+## 配置
+### 目录结构
+(https://docs.npmjs.com/files/folders)
+* 本地安装,包在 `./node_modules` ,利用 require 方式引入包
+* 全局安装,在 `/usr/local` 或 node 的安装地址,为命令行工具
+  
+> 如果想要全局使用包,使用 `npm link` 创建软链接
+
+### 修改安装路径
+#### prefix
+1. 确定 node 安装位置
+  * windows 默认值为 `%AppData%\npm`,安装在相同位置
+  * linux 默认值为 `/usr/local`, node 安装在 `{prefix}/bin/` 目录
+
+2. 确定 npm 全局包的安装位置
+  * windows 安装在 `{prefix}/node_modules` 目录
+  * linux 安装在 `{prefix}/lib/node_modules` 目录
+
+  > 对于 scope 包,安装上述目录的 scope 目录下,例如
+  详见 [scope](https://docs.npmjs.com/misc/scope)
+
+  
+#### cache 
+缓存的目录
+
+### 递归包处理
+npm 对于递归包会组织递归安装.
+详细逻辑参见 [递归处理](https://docs.npmjs.com/files/folders#cycles-conflicts-and-folder-parsimony)
+
 ## npmrc
 `.npmrc` 是 npm 的配置文件.
 用来配置 npm 命令执行时的行为.
@@ -269,56 +352,8 @@ editor|设置 npm 默认打开的编辑器|
 
 
 
-#
 
-1. 什么是 package
-    1. 包含用 package.json 描述的代码文件夹
-    2. 利用 gzip tarball 对 1 进行打包
-    3. 一个 URL 指向 2 对应的包
-    4. <name>@<version> 的名称指向注册的 URL 地址
-    5. 利用<name>@<tag> 指向 4 中名称
-    6. 利用 <name> 指向最近的 5
-    7. 一个 git 当克隆来源 1 的内容时
 
-2. 什么是 module
-    1. 模块可以被 package 加载有三种类型
-        * 包含 package.json 和 main wenjian 文件的路径
-        * 包含 restify.js 的文件
-        * 一个 js 的脚本文件
-    2. 有一些模块是`cli 的可执行命令`他们并不是模块
-    3. 模块是一个组件存放在 node_modules 文件夹下，而包含 package.json 的文件夹
-    可以理解为利用这些组件创建的包，当你提交后，对于别人相当于新的组件。
 
-3. 理解模块依赖
- 详细资料请看[NPM 官网](http://npm.github.io/how-npm-works-docs/index.html)
- 下面简要讲解 NPM v3 的包管理逻辑
-```
-// 1. 你的项目依赖 A 和 B 的模块
-yourproject --->A
-            └-->B
 
-// 2. A 和 B 依赖 C 的版本 CV1 和 CV2 NPM 会根据 A 和 B 中的 package.json 自动安装依赖
-yourproject --->A-->CV1
-            └-->B-->CV2
-            
-// 3. 假设此时你更新了 A 和 B ,A 对 C 的依赖升级为最新版 的 C.
-yourproject --->A
-            |-->B-->CV2 
-            |-->C
-            
-// 4. 假设此时  D 需要 B 和 CV3 的依赖,包关系如下
-yourproject --->A
-            |-->B-->CV2
-            |-->C
-            └-->D-->CV3
-            
-// 5. 假设此时所有安装包和依赖更新到最新版
-yourproject --->A
-            |-->B
-            |-->C
-            └-->D
 
-// 总结可以看出，所有依赖都是独立在每个模块下，当依赖中的包变为最新时，会独立出来，
-利用这种方式可以极大地减小，依赖包之间的嵌套关系，减小树的深度。
-包的安装按照字典排序。
-````

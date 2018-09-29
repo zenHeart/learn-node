@@ -96,7 +96,6 @@ linux 的选项一般具有如下特点
 * restify.js 文件
 
 ```js
-practice
 console.log('test npm cli!');    
 ```
 
