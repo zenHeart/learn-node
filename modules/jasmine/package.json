@@ -4,12 +4,13 @@
   "description": "使用 jasmine 的测试范例",
   "main": "jasmine_test.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:init":"npx jasmine init",
+    "test": "npx jasmine"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
-    "jasmine": "^2.5.3"
+    "jasmine": "^2.99.0"
   }
 }

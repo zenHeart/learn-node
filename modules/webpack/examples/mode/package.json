@@ -1,6 +1,0 @@
-{
-  "scripts": {
-    "build:develop": "webpack --mode=development",
-    "build:prod": "webpack --mode=production"
-  }
-}

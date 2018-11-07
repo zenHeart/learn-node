@@ -22,6 +22,7 @@
     "webpack-dev-server": "^2.11.1"
   },
   "scripts": {
+    "test":"jest --watch api/path "
   },
   "repository": {
     "type": "git",

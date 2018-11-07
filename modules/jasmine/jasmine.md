@@ -102,5 +102,20 @@ jasmine 是一个测试框架，用来进行单元测试。
 ## 在浏览器中使用 jasmine
 
 
+## node 中使用
+```bash
+# 安装 jasmine
+npm install jasmine
+# 本地初始化测试
+npx jasmine init
+# 创建一个 jasmine 测试
+npx jasmine examples
+# 运行测试
+npx jasmine
+```
+
+## spy
 
 
+## 参考资料
+* [ ] [jasmine](https://jasmine.github.io/tutorials/your_first_suite.html)
