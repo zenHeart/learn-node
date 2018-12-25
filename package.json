@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "config": "^1.29.2",
+    "convict": "^4.4.0",
     "lodash": "^4.17.4",
     "nightwatch": "^0.9.19",
     "node-config": "0.0.2",
@@ -22,7 +23,7 @@
     "webpack-dev-server": "^2.11.1"
   },
   "scripts": {
-    "test":"jest --watch api/path "
+    "test": "jest --watch api/path "
   },
   "repository": {
     "type": "git",

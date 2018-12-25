@@ -30,6 +30,7 @@ npm 包最佳实践
 
 `readme` 将会显示在仓库的主页。
 
+> 2018 年需要采用 `npm publish --access public` 方式提交,参看 <https://stackoverflow.com/questions/53420758/npm-publish-gives-unscoped-packages-cannot-be-private>
 4. 更新
 
 `npm version <update_type>` 类型参照语义化版本规则。

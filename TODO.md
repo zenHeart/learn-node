@@ -1,3 +1,6 @@
+* [ ] [npm 安装 couchdb](https://github.com/npm/npm-registry-couchapp)
+* [ ] 学习 [standard](https://standardjs.com/readme-zhcn.html)
+* [ ] 学习 [husky](https://github.com/typicode/husky) 的使用,在 npm 中配置 git 钩子
 * [ ] 学习 [unlish](http://netflix.github.io/unleash/) 使用
 * [ ] 完善 npx 工具的使用
 * [ ] 可以参考 webpack 测试用例,将配置项写成测试进行验证

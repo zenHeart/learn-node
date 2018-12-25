@@ -1,8 +1,8 @@
 ---
-title:best_practices    
-tag:best_practices      
-birth:2017-02-23      
-modified:2017-02-23      
+title: best_practices    
+tag: best_practices      
+birth: 2017-02-23      
+modified: 2017-02-23      
 ---
 
 best_practices
@@ -47,7 +47,8 @@ best_practices
 ```txt
 .
 ├── todo.md  # 存放项目进度记录
-├── readme.md  # 项目基本说明
+├── README.md  # 项目基本说明
+├── CHANGELOG.md  # 跟新信息
 ├── .gitignore  # git 忽略文件
 ├── conf   # 存放该项目配置文件
 ├── bin    # 存放命令行工具,没有则删除该目录
@@ -108,16 +109,15 @@ todo 文件结构详细说明如下
 * `*.sql` 存储项目相关数据库的测试脚本
 * `*.js...` 和项目相关的自动化流程
     
-### readme.md
+### README.md
 存放项目架构说明.
 尽一切可能让新手可以快速理解项目的整套流程.
 
 ```markdown
 ## 目录架构 
 
-* 利用 `tree -L 1` 指令列出目录树.若有必要对相关目录可以
-    利用 `tree -L 1` 单独列出后进行进一步解说.
-    
+* 利用 `tree -L 1` 指令列出目录树.对相关目录文件进行解释说明
+
 ## 工作流
 * 申明编码规则
 * 申明提交规则
@@ -154,13 +154,12 @@ nvm install node
 
 
 
-* [n](https://github.com/tj/n)
+#### [n](https://github.com/tj/n)
 
 
-# 参考
+## 参考
 
-[node 最佳实践](https://blog.risingstack.com/node-js-project-structure-tutorial-node-js-at-scale/)
-
-[node 最佳实践](https://devcenter.heroku.com/articles/node-best-practices)
-
-[folder structure](https://github.com/kriasoft/Folder-Structure-Conventions)
+* [node 项目结构](https://blog.risingstack.com/node-js-project-structure-tutorial-node-js-at-scale/)
+* [node 最佳实践](https://devcenter.heroku.com/articles/node-best-practices)
+* [folder structure](https://github.com/kriasoft/Folder-Structure-Conventions)
+* [npm 包结构](https://docs.npmjs.com/files/package.json#directories)

@@ -1,0 +1,6 @@
+{
+  "name": "basic",
+  "dependencies": {
+    "package1": "^0.0.1"
+  }
+}

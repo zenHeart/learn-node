@@ -1,0 +1,17 @@
+{
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "tgz": "tar -cvzf tar.tgz tar-package;mv tar.tgz tar-package/",
+    "install:folder": "npm i folder-package",
+    "install:tgz": "npm i ./tar-package/tar.tgz",
+    "install:git": "npm i -D https://github.com/TheCraftKid/npm-hello-world.git"
+  },
+  "devDependencies": {
+    "thecraftkid-npm-hello-world": "git+https://github.com/TheCraftKid/npm-hello-world.git"
+  },
+  "dependencies": {
+    "folder-package": "file:folder-package",
+    "tar-package": "file:tar-package/tar.tgz"
+  }
+}
