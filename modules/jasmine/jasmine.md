@@ -1,12 +1,5 @@
----
-title:jasmine    
-tag:jasmine      
-birth:2017-01-17      
-modified:2017-01-17      
----
+# jasmine
 
-jasmine
-===
 **前言:讲解 jasmine 的使用**
 
 ---

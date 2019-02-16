@@ -1,3 +1,5 @@
+* [rollup 使用](https://www.rollupjs.com/guide/zh#-overview-)
+* [狼叔 nodejs 教程](https://i5ting.github.io/How-to-learn-node-correctly/#10309)
 * [ ] [npm 安装 couchdb](https://github.com/npm/npm-registry-couchapp)
 * [ ] 学习 [standard](https://standardjs.com/readme-zhcn.html)
 * [ ] 学习 [husky](https://github.com/typicode/husky) 的使用,在 npm 中配置 git 钩子
