@@ -1,0 +1,16 @@
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nps",
+    "test":"nps test"
+  },
+  "keywords": [],
+  "author": "zenheart <zenheart_register@163.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "nps": "5.9.5"
+  }
+}
