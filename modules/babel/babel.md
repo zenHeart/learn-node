@@ -49,3 +49,9 @@ babel babel_test.js -o compile.js
 ```
 
 > 利用 `babel-node` 可以模拟支持 es6 的 repl 模式 node 终端.
+
+
+## 参考资料
+* [estree](https://github.com/estree/estree)
+* [babel](https://www.jianshu.com/p/e9b94b2d52e2)
+* [tiny compiler](https://github.com/zenHeart/the-super-tiny-compiler)

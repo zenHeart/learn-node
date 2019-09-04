@@ -1,3 +1,4 @@
+* [node-gyp 编译工具使用](https://github.com/nodejs/node-gyp)
 * [rollup 使用](https://www.rollupjs.com/guide/zh#-overview-)
 * [狼叔 nodejs 教程](https://i5ting.github.io/How-to-learn-node-correctly/#10309)
 * [ ] [npm 安装 couchdb](https://github.com/npm/npm-registry-couchapp)
@@ -17,6 +18,9 @@
 * [ ] parcel 使用
 * [ ] rollup 使用
 * [ ] flow 使用
+* [ ] 查看 https://github.com/nswbmw/node-in-debugging
+* [ ] 搞清楚执行函数栈和作用域链的关系
+* [ ] 学习 [Mustache](https://mustache.github.io/#demo)
  
 
 

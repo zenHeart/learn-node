@@ -5,10 +5,10 @@
 
   <testsuite name="begin"
     errors="0" failures="1" hostname="" id="" package="begin" skipped="0"
-    tests="1" time="15.02" timestamp="Fri, 17 Nov 2017 10:16:10 GMT">
+    tests="1" time="18.44" timestamp="Thu, 09 May 2019 17:40:57 GMT">
   
-    <testcase name="Demo test baidu" classname="begin" time="15.02" assertions="1">  <failure message="Timed out while waiting for element &lt;body&gt; to be visible for 10000 milliseconds.">    at Object.Demo test baidu (/Users/lockepc/code/github/node-lab/modules/night-watch/tests/e2e/begin.js:5:14)
-    at _combinedTickCallback (internal/process/next_tick.js:131:7)</failure>
+    <testcase name="Demo test baidu" classname="begin" time="18.44" assertions="1">  <failure message="Timed out while waiting for element &lt;body&gt; to be visible for 10000 milliseconds.">    at Object.Demo test baidu (/Users/lockepc/code/github/node-lab/modules/night-watch/tests/e2e/begin.js:5:14)
+    at processTicksAndRejections (internal/process/task_queues.js:79:9)</failure>
 
     
     </testcase>

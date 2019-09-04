@@ -1,6 +1,6 @@
 {
   "name": "package2",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Now I’m the model of a modern major general / The venerated Virginian veteran whose men are all / Lining up, to put me up on a pedestal / Writin’ letters to relatives / Embellishin’ my elegance and eloquence / But the elephant is in the room / The truth is in ya face when ya hear the British cannons go / BOOM",
   "keywords": [],
   "author": "zenheart <locke.cheng@wpi-group.com>",
@@ -25,6 +25,10 @@
   },
   "homepage": "https://github.com/zenHeart/node-lab#readme",
   "dependencies": {
-    "package1": "file:../package1"
-  }
+    "package1": "^0.0.1"
+  },
+  "publishConfig": {
+    "registry": "http://localhost:4873"
+  },
+  "gitHead": "91ad38b0a5f4aab4cc18222a930a5f0548fc466f"
 }

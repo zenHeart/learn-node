@@ -1,0 +1,16 @@
+{
+  "name": "lit-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "**介绍新的模板系统**",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --experimental-modules  index.js"
+  },
+  "keywords": [],
+  "author": "zenheart <zenheart_register@163.com> (https://blog.zenheart.site/)",
+  "license": "ISC",
+  "dependencies": {
+    "lit-html": "^1.1.1"
+  }
+}

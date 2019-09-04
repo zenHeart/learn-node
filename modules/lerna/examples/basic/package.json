@@ -1,6 +1,7 @@
 {
   "name": "basic",
-  "dependencies": {
-    "package1": "^0.0.1"
+  "scripts":{
+	  "prepublish": "git push --all",
+	  "publish":"lerna publish "
   }
 }

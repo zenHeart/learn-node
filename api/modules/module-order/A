@@ -1,0 +1,7 @@
+const a = require('./a.js')
+const b = require('./index.js')
+
+console.log('load module A,children:',module.children.length)
+module.exports = {
+	A:'A'
+}

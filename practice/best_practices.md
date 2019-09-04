@@ -156,6 +156,8 @@ nvm install node
 
 #### [n](https://github.com/tj/n)
 
+## 文件命名
+采用中划线或下划线命名文件
 
 ## 参考
 

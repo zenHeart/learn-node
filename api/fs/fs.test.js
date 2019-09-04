@@ -2,12 +2,13 @@
  * Created by locke on 2017/3/24.
  */
 var fs = require('fs');
+var path = require('path');
 var outputPath = 'output/' ;
-var moment = require('moment');
-var timePre = moment().format('YYYY-MM-DD');
+// var moment = require('moment');
+// var timePre = moment().format('YYYY-MM-DD');
 
 
-console.log(fs.readdirSync('../../src/device/interface'));
+console.log(fs.readdirSync(path.join(__dirname+'./..')));
 
 /*
 

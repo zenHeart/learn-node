@@ -3,6 +3,7 @@
 .idea
 # 忽略编译成功目录
 dist/
+**/*.mp4
 
 
 # sass

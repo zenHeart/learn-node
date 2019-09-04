@@ -1,0 +1,15 @@
+{
+  "name": "inquirer-demo",
+  "version": "1.0.0",
+  "description": "## 概述 用于在终端实现交互式提问。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "zenheart <zenheart_register@163.com>",
+  "license": "ISC",
+  "dependencies": {
+    "inquirer": "6.3.1"
+  }
+}

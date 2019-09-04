@@ -351,6 +351,9 @@ editor|设置 npm 默认打开的编辑器|
 
 
 
+## 参考资料
+* [npm-shrinkwrap](https://tech.meituan.com/2015/10/23/npm-shrinkwrap.html)
+* [npm files 和 directory 的作用](https://stackoverflow.com/questions/40795836/how-do-you-use-the-files-and-directories-properties-in-package-json)
 
 
 

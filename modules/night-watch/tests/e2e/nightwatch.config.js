@@ -38,13 +38,5 @@ module.exports = {
         }
       }
     },
-
-    'phantomjs': {
-      'desiredCapabilities': {
-        'browserName': 'phantomjs',
-        'javascriptEnabled': true,
-        'acceptSslCerts': true
-      }
-    }
   }
 }

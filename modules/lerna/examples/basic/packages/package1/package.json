@@ -1,6 +1,6 @@
 {
   "name": "package1",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "> TODO: description",
   "author": "zenheart <locke.cheng@wpi-group.com>",
   "homepage": "https://github.com/zenHeart/node-lab#readme",
@@ -24,6 +24,10 @@
     "url": "https://github.com/zenHeart/node-lab/issues"
   },
   "dependencies": {
-    "package2": "file:../package2"
-  }
+    "package2": "^0.0.1"
+  },
+  "publishConfig": {
+    "registry": "http://localhost:4873"
+  },
+  "gitHead": "91ad38b0a5f4aab4cc18222a930a5f0548fc466f"
 }

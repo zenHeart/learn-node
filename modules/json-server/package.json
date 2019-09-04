@@ -1,0 +1,13 @@
+{
+  "name": "json-server",
+  "version": "1.0.0",
+  "description": "**详解 json server 的使用**",
+  "main": "index.js",
+  "scripts": {
+    "demo:basic": "json-server --watch db.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "zenheart <zenheart_register@163.com> (https://blog.zenheart.site/)",
+  "license": "ISC"
+}

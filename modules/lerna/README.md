@@ -13,8 +13,9 @@ lerna
     ```
 
 
+## 详细命令讲解
+### lerna publish
 
 ## 参考资料
 * [monorepo](https://github.com/babel/babel/blob/master/doc/design/monorepo.md)
 * [monorepo 新浪潮](https://github.com/pigcan/blog/issues/3) 
-* 

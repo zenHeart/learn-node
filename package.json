@@ -41,5 +41,8 @@
   "bugs": {
     "url": "https://github.com/zenHeart/node-lab/issues"
   },
-  "homepage": "https://github.com/zenHeart/node-lab#readme"
+  "homepage": "https://github.com/zenHeart/node-lab#readme",
+  "directories": {
+    "example": "examples"
+  }
 }
