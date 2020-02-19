@@ -6,7 +6,7 @@
   "dependencies": {
     "config": "^1.29.2",
     "convict": "^4.4.0",
-    "lodash": "^4.17.4",
+    "lodash": "^4.17.13",
     "nightwatch": "^0.9.19",
     "node-config": "0.0.2",
     "pug": "^2.0.0-rc.4",
