@@ -1,0 +1,17 @@
+{
+    "name": "virtual-dom-demo",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start:dev": "webpack-dev-server",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "zenheart <zenheart_register@163.com> (https://blog.zenheart.site/)",
+    "license": "ISC",
+    "devDependencies": {
+        "virtual-dom": "^2.1.1",
+        "webpack-dev-server": "^3.10.1"
+    }
+}
