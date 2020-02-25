@@ -1,4 +1,5 @@
 backlog:
+    ☐ 学习 https://www.hackdoor.io/articles/4XJoDNkD/how-to-scale-your-node-js-server-using-clustering?source=gama cluster 的使用
     ☐ 添加 [fs-extra](https://github.com/jprichardson/node-fs-extra) 的使用示例
     ☐ node 内存泄漏排查方法](https://zhuanlan.zhihu.com/p/25736931)
     ☐  [node-gyp 编译工具使用](https://github.com/nodejs/node-gyp)
