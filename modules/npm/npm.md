@@ -1,15 +1,6 @@
-
----   
-title: npm   
-tag: npm   
-birth: 2016-08-22 09:05:50   
----
-
-[npm](https://docs.npmjs.com/getting-started/what-is-npm)
-===
+# [npm](https://docs.npmjs.com/getting-started/what-is-npm)
 
 **前言:详细讲解 npm 的使用**
----
 
 ## 概述
 
@@ -28,6 +19,7 @@ npm 常用功能如下
 3. 理解 npm 体系及工作原理
 
 ## [package.json](https://docs.npmjs.com/files/package.json)
+
 npm 利用 package.json 文件描述项目.
 在 node 项目根目录利用 `npm  init` 会创建一个交互窗口,完成后会根据输入创建该文件.
 以 npm 包为例,典型的 `package.json` 格式如下
@@ -89,10 +81,10 @@ npm 利用 package.json 文件描述项目.
 
 其中最重要的字段为
 
-参数|含义|
-----|----|
-dependencies|用来申明应用需要的依赖包
-devDependencies|在开发过程中才需要的包,例如测试工具等
+| 参数            | 含义                                  |
+| --------------- | ------------------------------------- |
+| dependencies    | 用来申明应用需要的依赖包              |
+| devDependencies | 在开发过程中才需要的包,例如测试工具等 |
 
 其余详见 npm 配置项  [`package.json`](https://docs.npmjs.com/files/package.json) 说明.
 
@@ -200,6 +192,9 @@ npm install -g @angular/cli
 地址为 `{prefix}/lib/node_modules/<package>`,
 此外会创建 bin 对应的连接到 `{prefix}/bin/{name}`
 
+### npm audit
+诊断潜在问题的 npm 包。
+详细参见 [npm 安全问题修复](https://itnext.io/fixing-security-vulnerabilities-in-npm-dependencies-in-less-than-3-mins-a53af735261d)
 
 
 
@@ -329,10 +324,10 @@ array[] = third value
 详细配置选项参见 [npm-config](https://docs.npmjs.com/misc/config).
 常用配置项如下.
 
-参数 |作用|
-:---|---|
-cache|缓存位置|
-editor|设置 npm 默认打开的编辑器|
+| 参数   | 作用                      |
+| :----- | ------------------------- |
+| cache  | 缓存位置                  |
+| editor | 设置 npm 默认打开的编辑器 |
 
 
 **配制方法**

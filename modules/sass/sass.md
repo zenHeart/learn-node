@@ -1,15 +1,7 @@
----
-title: sass    
-tags: sass css tool      
-birth: 2017-08-12      
-modified: 2017-08-12      
----
+# sass
 
-sass
-===
-**前言:讲解 sass 的基本使用**
+**前讲解 sass 的基本使用**
 
----
 
 ## 概述
 
