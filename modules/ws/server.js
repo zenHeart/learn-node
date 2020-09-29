@@ -12,7 +12,7 @@ const wss = new WebSocket.Server (
 
 wss.on ('connection', function (ws) {
   ws.on ('message', function (msg) {
-    console.log ('received:%s', msg);
+    console.log('received', msg);
+    ws.send(msg);
   });
-  ws.send ('something');
 });
