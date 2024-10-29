@@ -1,0 +1,6 @@
+{
+   "eslint.nodePath": "~/self/learn-node/node_modules",
+   "eslint.options": {
+     "resolvePluginsRelativeTo": "~/self/learn-node/node_modules"
+   },
+}

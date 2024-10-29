@@ -1,26 +1,23 @@
-var Excel = require('exceljs');
+const Excel = require('exceljs')
 
 // create workbook & add worksheet
-var workbook = new Excel.Workbook();
-var worksheet = workbook.addWorksheet('test');
-
-
+const workbook = new Excel.Workbook()
+const worksheet = workbook.addWorksheet('test')
 
 // add column headers
 worksheet.columns = [
-    { header: 'mac', key: 'mac'},
-    { header: 'meter', key: 'meter'}
-];
+  { header: 'mac', key: 'mac' },
+  { header: 'meter', key: 'meter' }
+]
 
-worksheet.addRows([[1,2],[2,3],null,[3]]);
+worksheet.addRows([[1, 2], [2, 3], null, [3]])
 
-console.log(worksheet.rowCount);
-
+console.log(worksheet.rowCount)
 
 // save workbook to disk
-workbook.xlsx.writeFile('charger.xlsx').then(function() {
-    console.log("saved");
-});
+workbook.xlsx.writeFile('charger.xlsx').then(function () {
+  console.log('saved')
+})
 
 /*
 /!------------------excel demo--------------------*!/
@@ -56,4 +53,4 @@ worksheet.getCell('B6').value = 2014;
 // save workbook to disk
 workbook.xlsx.writeFile('taylor_swift.xlsx').then(function() {
     console.log("saved");
-});*/
+}); */

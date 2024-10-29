@@ -47,3 +47,10 @@ jest 默认识别 `(default: [ '**/__tests__/**/*.js?(x)', '**/?(*.)(spec|test).
     ```
 
 > 注意此模式下,变量不可全局引用,目前为 jest bug.
+
+
+## 调试 jest 问题
+
+```bash
+node --inspect-brk ../../node_modules/.bin/jest --runInBand <filepath>
+```
