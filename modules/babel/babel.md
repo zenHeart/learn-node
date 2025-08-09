@@ -1,22 +1,14 @@
----
-title: babel    
-tags: tool node      
-birth: 2017-10-07      
-modified: 2017-10-07      
----
+# babel
 
-babel
-===
-**前言:编译 es6 语法向下兼容**
-
----
 
 ## 概述
+
 对于不支持 es6 特性的浏览器.
 采用 es6 编写后,利用 babel 转译成兼容版本.
 详见 [babel](https://babeljs.io/)
 
 ## 快速入门
+
 1. 全局安装 babel 命令行工具
 ```bash
 npm install --global babel-cli

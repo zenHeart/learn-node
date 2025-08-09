@@ -1,0 +1,21 @@
+{
+  "name": "babel-plugin-demo",
+  "version": "1.0.0",
+  "description": "A simple Babel plugin demonstration.",
+  "main": "plugin.js",
+  "scripts": {
+    "build:plugin": "cd babel-plugin-demo && babel src --out-dir dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "babel",
+    "plugin",
+    "demo"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.26.4",
+    "@babel/core": "^7.26.10"
+  }
+}
