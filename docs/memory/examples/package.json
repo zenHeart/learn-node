@@ -1,0 +1,8 @@
+{
+   "scripts": {
+      "gc": "node --trace_gc ./gc.js  > gc.log",
+      "prof": "node --prof ./prof.js",
+      "memory:h": "node --expose-gc --max-old-space-size=512 memoryUsage.js heap",
+      "memory:b": "node --expose-gc --max-old-space-size=512 memoryUsage.js buffer"
+   }
+}

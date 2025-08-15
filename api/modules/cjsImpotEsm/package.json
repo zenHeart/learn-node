@@ -1,0 +1,5 @@
+{
+   "scripts": {
+      "cjs": "node --experimental-print-required-tla '/Users/gufeng/self/learn-node/api/modules/cjsImpotEsm/index.cjs'"
+   }
+}

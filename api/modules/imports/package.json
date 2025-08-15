@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "useInternal": "node useInternal.js"
+  },
+  "imports": {
+    "#add":  "./add.js"
+  },
+  "type": "module"
+}

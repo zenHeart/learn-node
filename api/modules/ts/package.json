@@ -1,0 +1,5 @@
+{
+   "scripts": {
+      "enum": "node --experimental-transform-types  './enum.ts' "
+   }
+}

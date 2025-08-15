@@ -1,0 +1,9 @@
+{
+   "scripts": {
+      "subpathCheck": "node subpathCheck.js"
+   },
+   "dependencies": {
+      "test-module": "file:./test-module"
+   },
+   "type": "module"
+}

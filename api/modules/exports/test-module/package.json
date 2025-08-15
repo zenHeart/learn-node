@@ -1,0 +1,8 @@
+{
+   "name": "test-module",
+   "type": "module",
+   "exports": {
+      ".": "./index.js",
+      "./add": "./src/add.js"
+   }
+}
