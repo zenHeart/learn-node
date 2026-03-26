@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>package-lock.json 结构解析演示</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #cb3837 0%, #8b0000 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #cb3837;
+            border-bottom: 2px solid #cb3837;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .section h3 {
+            color: #555;
+            margin: 20px 0 10px;
+        }
+
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        .json-key {
+            color: #9cdcfe;
+        }
+
+        .json-string {
+            color: #ce9178;
+        }
+
+        .json-number {
+            color: #b5cea8;
+        }
+
+        .json-comment {
+            color: #6a9955;
+        }
+
+        .json-boolean {
+            color: #569cd6;
+        }
+
+        .lockfile-version-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .lockfile-version-table th,
+        .lockfile-version-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .lockfile-version-table th {
+            background: #cb3837;
+            color: white;
+        }
+
+        .lockfile-version-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .scenario-card {
+            background: #f9f9f9;
+            border-left: 4px solid #cb3837;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .scenario-card h4 {
+            color: #cb3837;
+            margin-bottom: 10px;
+        }
+
+        .interactive-demo {
+            background: #f0f7ff;
+            border: 2px dashed #cb3837;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .demo-output {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        button {
+            background: #cb3837;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #8b0000;
+        }
+
+        button.secondary {
+            background: #555;
+        }
+
+        button.secondary:hover {
+            background: #333;
+        }
+
+        .field-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .field-card {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+        }
+
+        .field-card .field-name {
+            font-weight: bold;
+            color: #cb3837;
+            font-family: monospace;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .field-card .field-desc {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .flow-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .flow-step-number {
+            background: #cb3837;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .flow-step-content {
+            background: #f9f9f9;
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 5px;
+            border-left: 3px solid #cb3837;
+        }
+
+        .flow-arrow {
+            text-align: center;
+            color: #cb3837;
+            font-size: 1.5em;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background: #555;
+            color: white;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .tab-container {
+            margin: 15px 0;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: #2d2d2d;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 0 5px 5px 5px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .highlight-box {
+            background: #fffde7;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .highlight-box.warning {
+            background: #fff3e0;
+            border-color: #ff9800;
+        }
+
+        .highlight-box.success {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>package-lock.json 结构解析演示</h1>
+            <p>深入理解 npm 依赖锁定机制</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- 概述 -->
+        <div class="section">
+            <h2>什么是 package-lock.json</h2>
+            <p><code>package-lock.json</code> 是 npm 5+ 版本引入的锁文件,用于锁定依赖包的精确版本,确保团队协作和构建的可重现性。</p>
+
+            <div class="highlight-box success">
+                <strong>核心作用:</strong> 记录每个包的确切版本、下载地址和完整性哈希,保证"每次安装都能得到相同的结果"。
+            </div>
+        </div>
+
+        <!-- 顶层级结构 -->
+        <div class="section">
+            <h2>package-lock.json 顶层级结构</h2>
+
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="showTab('structure-v3')">npm v7+ (v3)</button>
+                    <button class="tab-btn" onclick="showTab('structure-v1')">npm v5-v6 (v1)</button>
+                </div>
+
+                <div id="structure-v3" class="tab-content active">
+                    <pre><code><span class="json-comment">// npm v7+ 使用的格式 (lockfileVersion 3)</span>
+{
+  <span class="json-key">"name"</span>: <span class="json-string">"my-project"</span>,           <span class="json-comment">// 项目名称</span>
+  <span class="json-key">"version"</span>: <span class="json-string">"1.0.0"</span>,             <span class="json-comment">// 项目版本</span>
+  <span class="json-key">"lockfileVersion"</span>: <span class="json-number">3</span>,            <span class="json-comment">// 锁文件版本</span>
+  <span class="json-key">"packages"</span>: {                       <span class="json-comment">// 扁平化的包映射</span>
+    <span class="json-string">""</span>: { ... },                  <span class="json-comment">// 根项目</span>
+    <span class="json-string">"node_modules/lodash"</span>: { ... }  <span class="json-comment">// 直接依赖</span>
+  },
+  <span class="json-key">"dependencies"</span>: { ... }            <span class="json-comment">// 旧格式 (兼容)</span>
+}</code></pre>
+                </div>
+
+                <div id="structure-v1" class="tab-content">
+                    <pre><code><span class="json-comment">// npm v5-v6 使用的格式 (lockfileVersion 1)</span>
+{
+  <span class="json-key">"name"</span>: <span class="json-string">"my-project"</span>,
+  <span class="json-key">"version"</span>: <span class="json-string">"1.0.0"</span>,
+  <span class="json-key">"lockfileVersion"</span>: <span class="json-number">1</span>,
+  <span class="json-key">"dependencies"</span>: {                  <span class="json-comment">// 嵌套结构</span>
+    <span class="json-string">"lodash"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"4.17.21"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://..."</span>,
+      <span class="json-key">"dependencies"</span>: { ... }      <span class="json-comment">// 嵌套的依赖</span>
+    }
+  }
+}</code></pre>
+                </div>
+            </div>
+
+            <h3>lockfileVersion 版本对照</h3>
+            <table class="lockfile-version-table">
+                <thead>
+                    <tr>
+                        <th>lockfileVersion</th>
+                        <th>npm 版本</th>
+                        <th>主要特性</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>npm 5-6</td>
+                        <td>初始版本,嵌套依赖结构</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>npm 7-8</td>
+                        <td>新增 packages 字段</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>npm 9+</td>
+                        <td>支持 optionalDependencies 锁定</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 关键字段 -->
+        <div class="section">
+            <h2>package 条目的关键字段</h2>
+
+            <div class="field-list">
+                <div class="field-card">
+                    <div class="field-name">version</div>
+                    <div class="field-desc">精确的语义化版本号,如 "4.17.21"。严格匹配主版本.次版本.补丁版本。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">resolved</div>
+                    <div class="field-desc">包 tarball 的完整下载地址 URL。npm 直接从这个 URL 下载,绕过 registry 解析。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">integrity</div>
+                    <div class="field-desc">SHA 格式的完整性校验哈希 (SHA512/SHA256/SHA1)。确保下载内容未被篡改。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">dependencies</div>
+                    <div class="field-desc">该包的全部直接依赖及其精确版本。形成完整的依赖树。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">engines</div>
+                    <div class="field-desc">声明运行该包所需的 Node.js 和 npm 版本约束。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">optionalDependencies</div>
+                    <div class="field-desc">可选依赖列表。安装失败不会中断整体安装流程。</div>
+                </div>
+            </div>
+
+            <h3>integrity 字段格式</h3>
+            <pre><code><span class="json-comment">// SHA512 格式 (当前推荐)</span>
+<span class="json-string">"sha512-abc123...xyz789"</span>
+
+<span class="json-comment">// SHA256 格式</span>
+<span class="json-string">"sha256-abc123...xyz789"</span>
+
+<span class="json-comment">// SHA1 格式 (旧格式,不推荐)</span>
+<span class="json-string">"sha1-abc123...xyz789"</span></code></pre>
+        </div>
+
+        <!-- packages 结构示例 -->
+        <div class="section">
+            <h2>packages 字段结构详解</h2>
+            <p><code>packages</code> 是 npm v7+ 使用的扁平化结构,key 是 node_modules 中的相对路径。</p>
+
+            <pre><code>{
+  <span class="json-key">"packages"</span>: {
+
+    <span class="json-comment">// 空字符串代表根项目</span>
+    <span class="json-string">""</span>: {
+      <span class="json-key">"name"</span>: <span class="json-string">"my-project"</span>,
+      <span class="json-key">"version"</span>: <span class="json-string">"1.0.0"</span>,
+      <span class="json-key">"engines"</span>: { <span class="json-key">"node"</span>: <span class="json-string">">=16.0.0"</span> },
+      <span class="json-key">"funding"</span>: { <span class="json-key">"url"</span>: <span class="json-string">"https://..."</span> }
+    },
+
+    <span class="json-comment">// 直接依赖</span>
+    <span class="json-string">"node_modules/lodash"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"4.17.21"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z..."</span>,
+      <span class="json-key">"engines"</span>: { <span class="json-key">"node"</span>: <span class="json-string">">=0.10.0"</span> }
+    },
+
+    <span class="json-comment">// 嵌套依赖</span>
+    <span class="json-string">"node_modules/express/node_modules/body-parser"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"1.20.2"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/body-parser/-/body-parser-1.20.2.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-ml9pFE5nFCzj7cV8K4G..."</span>
+    },
+
+    <span class="json-comment">// scoped 包</span>
+    <span class="json-string">"node_modules/@babel/core"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"7.23.0"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/@babel/core/-/core-7.23.0.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-3Ba10e9SeKo2E1vDD8gL..."</span>
+    }
+  }
+}</code></pre>
+        </div>
+
+        <!-- 安装流程 -->
+        <div class="section">
+            <h2>npm install 如何使用 package-lock</h2>
+
+            <div class="flow-chart">
+                <div class="flow-step">
+                    <div class="flow-step-number">1</div>
+                    <div class="flow-step-content">
+                        <strong>读取 package-lock.json</strong><br>
+                        验证 lockfileVersion 是否兼容,检查 name 和 version 是否匹配
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">
+                    <div class="flow-step-number">2</div>
+                    <div class="flow-step-content">
+                        <strong>构建已安装包列表</strong><br>
+                        读取 node_modules/.package-lock.json,对比 package-lock.json
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">
+                    <div class="flow-step-number">3</div>
+                    <div class="flow-step-content">
+                        <strong>依赖解析与锁定</strong><br>
+                        根据 lockfile 中声明的精确版本安装,semver 范围使用锁定的版本
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">
+                    <div class="flow-step-number">4</div>
+                    <div class="flow-step-content">
+                        <strong>完整性校验</strong><br>
+                        下载 tarball,计算 SHA 哈希,与 integrity 字段比对
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">
+                    <div class="flow-step-number">5</div>
+                    <div class="flow-step-content">
+                        <strong>更新 lock 文件</strong><br>
+                        保存安装后的真实依赖树到 package-lock.json
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box warning">
+                <strong>注意:</strong> 使用 <code>npm ci</code> 可以跳过步骤 5,实现完全基于 lockfile 的干净安装。
+            </div>
+        </div>
+
+        <!-- 版本差异原因 -->
+        <div class="section">
+            <h2>为什么版本仍然可能不同</h2>
+
+            <div class="scenario-card">
+                <h4>1. Semver 范围未锁定</h4>
+                <p><code>package.json</code> 中使用 <code>"^4.17.21"</code> 或 <code>"~4.17.21"</code> 时:</p>
+                <pre><code><span class="json-comment">// package.json</span>
+{ <span class="json-key">"lodash"</span>: <span class="json-string">"^4.17.21"</span> }  <span class="json-comment">// >= 4.17.21 < 5.0.0</span>
+
+<span class="json-comment">// 删除 node_modules 和 package-lock.json 后重新安装
+// 可能获取 4.17.21, 4.17.22, 4.18.0 等任意满足范围的版本</span></code></pre>
+                <p><strong>解决方案:</strong> 使用确切版本或 ~ 锁定补丁版本</p>
+            </div>
+
+            <div class="scenario-card">
+                <h4>2. peerDependencies 冲突</h4>
+                <p>多个包对同一个 peer dependency 有不同版本要求时,npm 会尝试自动解决,不同版本组合可能产生不同结果。</p>
+                <pre><code><span class="json-comment">// 包 A 要求 react@17</span>
+<span class="json-comment">// 包 B 要求 react@18</span>
+<span class="json-comment">// npm 7+ 会自动安装两个版本到嵌套目录</span></code></pre>
+            </div>
+
+            <div class="scenario-card">
+                <h4>3. 可选依赖安装失败</h4>
+                <p>可选依赖安装失败时 npm 会静默忽略,不同平台可能安装不同的可选包。</p>
+                <pre><code>{ <span class="json-key">"optionalDependencies"</span>: {
+  <span class="json-key">"fsevents"</span>: <span class="json-string">"^2.3.3"</span>   <span class="json-comment">// macOS 特有,Windows 会跳过</span>
+}}</code></pre>
+            </div>
+
+            <div class="scenario-card">
+                <h4>4. npm 版本差异</h4>
+                <p>不同 npm 版本可能使用不同的 lockfileVersion,处理依赖的方式也有差异。</p>
+                <table class="comparison-table">
+                    <tr>
+                        <th>npm 版本</th>
+                        <th>lockfileVersion</th>
+                        <th>差异</th>
+                    </tr>
+                    <tr>
+                        <td>npm 5</td>
+                        <td>1</td>
+                        <td>基础锁定功能</td>
+                    </tr>
+                    <tr>
+                        <td>npm 7</td>
+                        <td>2</td>
+                        <td>支持 workspace</td>
+                    </tr>
+                    <tr>
+                        <td>npm 9</td>
+                        <td>3</td>
+                        <td>锁定 optionalDependencies</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 交互演示 -->
+        <div class="section">
+            <h2>交互演示: 解析 package-lock.json</h2>
+
+            <div class="interactive-demo">
+                <p>点击下方按钮查看不同场景的 package-lock.json 结构:</p>
+
+                <button onclick="showDemo('simple')">简单依赖</button>
+                <button onclick="showDemo('nested')">嵌套依赖</button>
+                <button onclick="showDemo('scoped')">Scoped 包</button>
+                <button onclick="showDemo('optional')">可选依赖</button>
+                <button class="secondary" onclick="clearDemo()">清除</button>
+
+                <div id="demo-output" class="demo-output">
+                    点击上方按钮查看示例...
+                </div>
+            </div>
+        </div>
+
+        <!-- 最佳实践 -->
+        <div class="section">
+            <h2>可重现构建最佳实践</h2>
+
+            <div class="field-list">
+                <div class="field-card">
+                    <div class="field-name">使用 npm ci</div>
+                    <div class="field-desc">用 <code>npm ci</code> 替代 <code>npm install</code>,实现完全基于 lockfile 的干净安装。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">锁定 package.json 版本</div>
+                    <div class="field-desc">使用确切版本 (<code>1.0.0</code>) 或补丁版本锁定 (<code>~1.0.0</code>) 而非范围版本。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">提交完整 lock 文件</div>
+                    <div class="field-desc">确保 package-lock.json 与代码同步提交,不要加入 .gitignore。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">统一 npm 版本</div>
+                    <div class="field-desc">在 package.json 的 engines 字段或 .nvmrc 文件中指定 npm 版本。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">验证安装结果</div>
+                    <div class="field-desc">使用 <code>npm ls</code> 检查已安装依赖,<code>npm outdated</code> 检查过时依赖。</div>
+                </div>
+
+                <div class="field-card">
+                    <div class="field-name">统一 registry</div>
+                    <div class="field-desc">团队使用相同的 npm registry,避免因镜像差异导致包内容不同。</div>
+                </div>
+            </div>
+
+            <h3>推荐的工作流</h3>
+            <pre><code><span class="json-comment"># 1. 首次克隆项目</span>
+npm ci
+
+<span class="json-comment"># 2. 添加新依赖</span>
+npm install &lt;package&gt;@latest --save
+
+<span class="json-comment"># 3. 更新依赖</span>
+npm update
+npm ci   <span class="json-comment"># 验证更新后的构建</span>
+
+<span class="json-comment"># 4. 提交变更</span>
+git add package.json package-lock.json
+git commit -m "deps: update/add ..."</code></pre>
+        </div>
+
+        <!-- yarn.lock 对比 -->
+        <div class="section">
+            <h2>package-lock.json vs yarn.lock</h2>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>特性</th>
+                        <th>package-lock.json</th>
+                        <th>yarn.lock</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>格式</td>
+                        <td>JSON</td>
+                        <td>YAML</td>
+                    </tr>
+                    <tr>
+                        <td>确定性安装</td>
+                        <td><code>npm ci</code> 保证</td>
+                        <td><code>yarn install</code> 默认保证</td>
+                    </tr>
+                    <tr>
+                        <td>离线缓存</td>
+                        <td>依赖 lock 文件</td>
+                        <td>内置 .yarn/cache 目录</td>
+                    </tr>
+                    <tr>
+                        <td>Workspace</td>
+                        <td>npm workspaces</td>
+                        <td>yarn workspaces</td>
+                    </tr>
+                    <tr>
+                        <td>CI 推荐</td>
+                        <td><code>npm ci</code></td>
+                        <td><code>yarn install --frozen-lockfile</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>yarn.lock 示例格式</h3>
+            <pre><code><span class="json-comment"># YAML 格式,人类可读</span>
+lodash@^4.17.21:
+  version "4.17.21"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#..."
+  integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
+
+axios@~1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.6.0.tgz#..."
+  integrity sha512-erhF3aS1f4Py...
+  dependencies:
+    follow-redirects "^1.15.0"
+    form-data "^4.0.0"
+    proxy-from-env "^1.1.0"</code></pre>
+        </div>
+
+        <!-- 常见问题 -->
+        <div class="section">
+            <h2>常见问题</h2>
+
+            <div class="scenario-card">
+                <h4>Q: package-lock.json 和 package.json 冲突怎么办?</h4>
+                <pre><code><span class="json-comment"># 删除 lock 文件重新生成</span>
+rm package-lock.json
+npm install</code></pre>
+            </div>
+
+            <div class="scenario-card">
+                <h4>Q: node_modules 中包版本与 lockfile 不一致?</h4>
+                <p>可能原因: 手动修改了 node_modules,或使用了特殊安装参数。</p>
+                <p><strong>解决:</strong> <code>npm ci</code></p>
+            </div>
+
+            <div class="scenario-card">
+                <h4>Q: lockfileVersion 不兼容?</h4>
+                <pre><code>npm notice package-lock.json exists but your npm version (6.14.17)
+does not support lockfileVersion 3.</code></pre>
+                <p><strong>解决:</strong> 升级 npm 或使用兼容的 node 版本。</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>package-lock.json 结构解析演示 | learn-node</p>
+    </footer>
+
+    <script>
+        function showTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // Deactivate all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Show selected tab content
+            document.getElementById(tabId).classList.add('active');
+            // Activate selected button
+            event.target.classList.add('active');
+        }
+
+        function showDemo(type) {
+            const output = document.getElementById('demo-output');
+
+            const demos = {
+                simple: `{
+  <span class="json-key">"packages"</span>: {
+    <span class="json-string">""</span>: {
+      <span class="json-key">"name"</span>: <span class="json-string">"my-app"</span>,
+      <span class="json-key">"version"</span>: <span class="json-string">"1.0.0"</span>
+    },
+    <span class="json-string">"node_modules/lodash"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"4.17.21"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z..."</span>,
+      <span class="json-key">"engines"</span>: { <span class="json-key">"node"</span>: <span class="json-string">">=0.10.0"</span> }
+    }
+  }
+}`,
+                nested: `{
+  <span class="json-key">"packages"</span>: {
+    <span class="json-string">""</span>: {
+      <span class="json-key">"name"</span>: <span class="json-string">"express-app"</span>,
+      <span class="json-key">"version"</span>: <span class="json-string">"1.0.0"</span>
+    },
+    <span class="json-string">"node_modules/express"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"4.18.2"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/express/-/express-4.18.2.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-4j2Ty2S6uG6W5x..."</span>,
+      <span class="json-key">"dependencies"</span>: {
+        <span class="json-key">"body-parser"</span>: <span class="json-string">"1.20.2"</span>,
+        <span class="json-key">"cookie"</span>: <span class="json-string">"0.5.0"</span>,
+        <span class="json-key">"debug"</span>: <span class="json-string">"2.6.9"</span>
+      }
+    },
+    <span class="json-string">"node_modules/express/node_modules/body-parser"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"1.20.2"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/body-parser/-/body-parser-1.20.2.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-ml9pFE5nFCzj7cV8K4G..."</span>,
+      <span class="json-key">"dependencies"</span>: {
+        <span class="json-key">"debug"</span>: <span class="json-string">"2.6.9"</span>,
+        <span class="json-key">"raw-body"</span>: <span class="json-string">"2.5.2"</span>
+      }
+    },
+    <span class="json-string">"node_modules/express/node_modules/debug"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"2.6.9"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/debug/-/debug-2.6.9.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-bPHpAp..."</span>
+    }
+  }
+}`,
+                scoped: `{
+  <span class="json-key">"packages"</span>: {
+    <span class="json-string">""</span>: {
+      <span class="json-key">"name"</span>: <span class="json-string">"babel-app"</span>,
+      <span class="json-key">"version"</span>: <span class="json-string">"1.0.0"</span>
+    },
+    <span class="json-string">"node_modules/@babel/core"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"7.23.0"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/@babel/core/-/core-7.23.0.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-3Ba10e9SeKo2E1vDD8gL..."</span>,
+      <span class="json-key">"engines"</span>: { <span class="json-key">"node"</span>: <span class="json-string">">=6"</span> }
+    },
+    <span class="json-string">"node_modules/@babel/preset-env"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"7.23.0"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/@babel/preset-env/-/preset-env-7.23.0.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-mge3..."</span>,
+      <span class="json-key">"dependencies"</span>: {
+        <span class="json-key">"@babel/core"</span>: <span class="json-string">"7.23.0"</span>
+      }
+    },
+    <span class="json-string">"node_modules/@babel/core/node_modules/semver"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"7.5.4"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/semver/-/semver-7.5.4.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-1Yk..."</span>
+    }
+  }
+}`,
+                optional: `{
+  <span class="json-key">"packages"</span>: {
+    <span class="json-string">""</span>: {
+      <span class="json-key">"name"</span>: <span class="json-string">"optional-demo"</span>,
+      <span class="json-key">"version"</span>: <span class="json-string">"1.0.0"</span>
+    },
+    <span class="json-string">"node_modules/fsevents"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"2.3.3"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-2xg..."</span>,
+      <span class="json-key">"optional"</span>: <span class="json-boolean">true</span>  <span class="json-comment">&lt;-- 表示可选依赖</span>
+    },
+    <span class="json-string">"node_modules/bufferutil"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"4.0.7"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/bufferutil/-/bufferutil-4.0.7.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-X..."</span>,
+      <span class="json-key">"optional"</span>: <span class="json-boolean">true</span>
+    },
+    <span class="json-string">"node_modules/utf-8-validate"</span>: {
+      <span class="json-key">"version"</span>: <span class="json-string">"5.0.10"</span>,
+      <span class="json-key">"resolved"</span>: <span class="json-string">"https://registry.npmjs.org/utf-8-validate/-/utf-8-validate-5.0.10.tgz"</span>,
+      <span class="json-key">"integrity"</span>: <span class="json-string">"sha512-N..."</span>,
+      <span class="json-key">"optional"</span>: <span class="json-boolean">true</span>
+    }
+  }
+}`
+            };
+
+            output.innerHTML = demos[type] || '请选择演示类型';
+        }
+
+        function clearDemo() {
+            document.getElementById('demo-output').innerHTML = '点击上方按钮查看示例...';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NestJS 模块架构演示</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 20px; }
+    h1 { text-align: center; color: #00d4ff; margin-bottom: 10px; font-size: 1.8em; }
+    .subtitle { text-align: center; color: #888; margin-bottom: 30px; font-size: 0.95em; }
+    .container { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .panel { background: #16213e; border-radius: 12px; padding: 20px; border: 1px solid #0f3460; }
+    .panel h2 { color: #00d4ff; margin-bottom: 15px; font-size: 1.1em; display: flex; align-items: center; gap: 8px; }
+    .panel h2::before { content: '◈'; color: #e94560; }
+    .code-block { background: #0f0f23; border-radius: 8px; padding: 15px; font-family: 'Fira Code', monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; color: #a9b7c6; }
+    .keyword { color: #cc7833; }
+    .string { color: #6a8759; }
+    .decorator { color: #ffc66d; }
+    .comment { color: #629755; font-style: italic; }
+    .type { color: #e8bf6a; }
+    .fn { color: #9876aa; }
+    .diagram { background: #0f0f23; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; min-height: 280px; justify-content: center; }
+    .module-box { background: linear-gradient(135deg, #e94560, #0f3460); border-radius: 12px; padding: 20px 30px; text-align: center; font-weight: bold; font-size: 1.1em; box-shadow: 0 4px 20px rgba(233,69,96,0.3); }
+    .children { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+    .child-box { background: #1a3a5c; border-radius: 8px; padding: 12px 18px; text-align: center; font-size: 0.9em; border: 1px solid #00d4ff33; cursor: pointer; transition: all 0.3s; }
+    .child-box:hover { background: #00d4ff22; border-color: #00d4ff; transform: translateY(-2px); }
+    .child-box.active { background: #00d4ff33; border-color: #00d4ff; }
+    .controls { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+    button { background: #0f3460; color: #00d4ff; border: 1px solid #00d4ff44; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    button:hover { background: #00d4ff22; }
+    button.active { background: #00d4ff33; border-color: #00d4ff; }
+    .flow { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; color: #888; margin-top: 10px; }
+    .flow span { color: #00d4ff; }
+    .log { background: #0a0a1a; border-radius: 8px; padding: 12px; max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.8; }
+    .log-entry { color: #6a8759; }
+    .log-entry.error { color: #e94560; }
+    .log-entry.info { color: #00d4ff; }
+    .tab-bar { display: flex; gap: 5px; margin-bottom: 15px; }
+    .tab { background: #0f3460; padding: 8px 14px; border-radius: 6px 6px 0 0; cursor: pointer; font-size: 13px; color: #888; border: 1px solid transparent; }
+    .tab.active { background: #16213e; color: #00d4ff; border-color: #0f3460; border-bottom-color: #16213e; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .anim { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>🏗️ NestJS 模块架构演示</h1>
+  <p class="subtitle">交互式理解 Controller / Provider / Module 的组织关系</p>
+
+  <div class="container">
+    <div class="panel">
+      <h2>模块结构</h2>
+      <div class="diagram" id="diagram">
+        <div class="module-box" id="moduleBox">@Module()</div>
+        <div class="children" id="children">
+          <div class="child-box" id="ctrlBox" onclick="highlight('controller')">📡 Controller</div>
+          <div class="child-box" id="provBox" onclick="highlight('provider')">⚙️ Provider</div>
+        </div>
+        <div class="flow" id="flow">
+          <span>请求</span> → <span>Controller</span> → <span>Provider</span> → <span>响应</span>
+        </div>
+      </div>
+      <div class="controls" style="margin-top:15px;">
+        <button onclick="showFlow('http')" class="active" id="btnHttp">🌐 HTTP 请求</button>
+        <button onclick="showFlow('di')" id="btnDI">💉 依赖注入</button>
+        <button onclick="showFlow('lifecycle')" id="btnLifecycle">🔄 生命周期</button>
+        <button onclick="reset()">🔄 重置</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>代码示例</h2>
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchTab('module')">Module</div>
+        <div class="tab" onclick="switchTab('controller')">Controller</div>
+        <div class="tab" onclick="switchTab('provider')">Provider</div>
+      </div>
+
+      <div class="tab-content active" id="tab-module">
+        <div class="code-block"><span class="decorator">@Module</span>({
+<pre>  <span class="decorator">controllers</span>: [<span class="type">CatsController</span>],
+  <span class="decorator">providers</span>: [<span class="type">CatsService</span>],
+  <span class="decorator">exports</span>: [<span class="type">CatsService</span>]
+})
+<span class="keyword">export class</span> <span class="type">CatsModule</span> {}</pre></div>
+      </div>
+
+      <div class="tab-content" id="tab-controller">
+        <div class="code-block"><span class="decorator">@Controller</span>(<span class="string">'cats'</span>)
+<span class="keyword">export class</span> <span class="type">CatsController</span> {
+  <span class="keyword">constructor</span>(
+    <span class="keyword">private readonly</span> <span class="fn">catsService</span>: <span class="type">CatsService</span>
+  ) {}
+
+  <span class="decorator">@Get</span>()
+  <span class="fn">findAll</span>() {
+    <span class="keyword">return this</span>.catsService.findAll();
+  }
+
+  <span class="decorator">@Post</span>()
+  <span class="decorator">@HttpCode</span>(<span class="type">201</span>)
+  <span class="fn">create</span>(<span class="decorator">@Body</span>() <span class="type">dto</span>: <span class="type">CreateCatDto</span>) {
+    <span class="keyword">return this</span>.catsService.create(dto);
+  }
+}</div>
+      </div>
+
+      <div class="tab-content" id="tab-provider">
+        <div class="code-block"><span class="decorator">@Injectable</span>()
+<span class="keyword">export class</span> <span class="type">CatsService</span> {
+  <span class="keyword">private</span> cats: <span class="type">Cat</span>[] = [];
+
+  <span class="fn">findAll</span>() {
+    <span class="keyword">return this</span>.cats;
+  }
+
+  <span class="fn">create</span>(cat: <span class="type">CreateCatDto</span>) {
+    <span class="keyword">const</span> newCat = { <span class="decorator">id</span>: <span class="type">Date</span>.now().toString(), ...cat };
+    <span class="keyword">this</span>.cats.push(newCat);
+    <span class="keyword">return</span> newCat;
+  }
+}</div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column: 1 / -1;">
+      <h2>执行日志</h2>
+      <div class="log" id="log">
+        <div class="log-entry info">[系统] 点击按钮或模块元素查看执行流程...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelector(`.tab[onclick="switchTab('${name}')"]`).classList.add('active');
+      document.getElementById('tab-' + name).classList.add('active');
+      addLog(`切换到 ${name.toUpperCase()} 代码视图`);
+    }
+
+    function highlight(type) {
+      document.querySelectorAll('.child-box').forEach(b => b.classList.remove('active'));
+      if (type === 'controller') document.getElementById('ctrlBox').classList.add('active');
+      if (type === 'provider') document.getElementById('provBox').classList.add('active');
+      if (type === 'both') { document.getElementById('ctrlBox').classList.add('active'); document.getElementById('provBox').classList.add('active'); }
+    }
+
+    function addLog(msg, type = 'entry') {
+      const log = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML += `<div class="log-entry ${type}">[${time}] ${msg}</div>`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function reset() {
+      document.querySelectorAll('.child-box').forEach(b => b.classList.remove('active'));
+      document.getElementById('flow').innerHTML = '<span>请求</span> → <span>Controller</span> → <span>Provider</span> → <span>响应</span>';
+      addLog('重置视图');
+    }
+
+    function showFlow(type) {
+      document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      const flow = document.getElementById('flow');
+      if (type === 'http') {
+        flow.innerHTML = '<span style="color:#e94560">① HTTP Request</span> → <span>② Middleware</span> → <span>③ Guard</span> → <span>④ Interceptor</span> → <span>⑤ Controller</span> → <span>⑥ Provider</span> → <span>⑦ Response</span>';
+        addLog('HTTP 请求流程: 请求 → 中间件 → 守卫 → 拦截器 → 控制器 → 提供者 → 响应');
+        addLog('Controller 通过构造函数注入 Provider');
+        highlight('both');
+      } else if (type === 'di') {
+        flow.innerHTML = '<span style="color:#e94560">① Module 注册</span> → <span>② IoC 容器扫描</span> → <span>③ 解析依赖关系</span> → <span>④ 创建实例</span> → <span>⑤ 注入到 Consumer</span>';
+        addLog('依赖注入流程: Module 声明 → IoC 容器解析 → 实例化 → 注入');
+        highlight('both');
+      } else if (type === 'lifecycle') {
+        flow.innerHTML = '<span style="color:#e94560">① onModuleInit</span> → <span>② 请求处理</span> → <span>③ onApplicationShutdown</span>';
+        addLog('生命周期: onModuleInit → 请求处理 → onApplicationShutdown');
+        highlight('both');
+      }
+    }
+  </script>
+</body>
+</html>

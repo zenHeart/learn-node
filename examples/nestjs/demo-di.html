@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NestJS 依赖注入演示</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; padding: 20px; }
+    h1 { text-align: center; color: #58a6ff; margin-bottom: 8px; font-size: 1.8em; }
+    .subtitle { text-align: center; color: #8b949e; margin-bottom: 25px; font-size: 0.95em; }
+    .container { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .panel { background: #161b22; border-radius: 12px; padding: 20px; border: 1px solid #30363d; }
+    .panel h2 { color: #58a6ff; margin-bottom: 15px; font-size: 1.1em; display: flex; align-items: center; gap: 8px; }
+    .panel h2::before { content: '◆'; color: #f78166; }
+    .ioc-view { background: #0d1117; border-radius: 10px; padding: 25px; min-height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; position: relative; overflow: hidden; }
+    .ioc-container { width: 180px; height: 180px; border: 3px dashed #30363d; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; position: relative; transition: all 0.5s; }
+    .ioc-container.active { border-color: #58a6ff; background: rgba(88,166,255,0.05); }
+    .ioc-label { font-size: 12px; color: #8b949e; text-align: center; }
+    .ioc-name { font-size: 14px; font-weight: bold; color: #58a6ff; }
+    .providers { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .provider-box { background: #1c2128; border: 1px solid #30363d; border-radius: 8px; padding: 10px 15px; text-align: center; font-size: 13px; cursor: pointer; transition: all 0.3s; min-width: 80px; }
+    .provider-box:hover { border-color: #58a6ff; background: rgba(88,166,255,0.1); }
+    .provider-box.injected { border-color: #3fb950; background: rgba(63,185,80,0.1); }
+    .provider-box.injected::after { content: ' ✓'; color: #3fb950; }
+    .arrow { font-size: 20px; color: #8b949e; animation: bounce 1.5s infinite; }
+    .arrow.fast { animation-duration: 0.5s; }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .code-area { background: #0d1117; border-radius: 8px; padding: 15px; font-family: 'Fira Code', monospace; font-size: 12.5px; line-height: 1.7; overflow-x: auto; }
+    .keyword { color: #ff7b72; }
+    .type { color: #d2a8ff; }
+    .decorator { color: #ffa657; }
+    .string { color: #a5d6ff; }
+    .comment { color: #8b949e; font-style: italic; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }
+    button { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    button:hover { border-color: #58a6ff; color: #58a6ff; }
+    button.primary { background: rgba(88,166,255,0.15); border-color: #58a6ff; color: #58a6ff; }
+    button.primary:hover { background: rgba(88,166,255,0.25); }
+    .log { background: #0d1117; border-radius: 8px; padding: 12px; max-height: 140px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.8; }
+    .log-entry { color: #3fb950; }
+    .log-entry.warn { color: #ffa657; }
+    .log-entry.info { color: #58a6ff; }
+    .log-entry.error { color: #ff7b72; }
+    .phase { background: rgba(88,166,255,0.1); border: 1px solid #30363d; border-radius: 8px; padding: 12px; margin-top: 15px; }
+    .phase-title { color: #58a6ff; font-weight: bold; margin-bottom: 8px; font-size: 13px; }
+    .step-list { display: flex; flex-direction: column; gap: 5px; }
+    .step { color: #c9d1d9; font-size: 13px; padding: 4px 8px; border-radius: 4px; transition: all 0.3s; }
+    .step.done { background: rgba(63,185,80,0.15); color: #3fb950; }
+    .step.active { background: rgba(88,166,255,0.15); color: #58a6ff; }
+    .scope-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 5px; }
+    .scope-singleton { background: rgba(63,185,80,0.2); color: #3fb950; }
+    .scope-request { background: rgba(255,166,87,0.2); color: #ffa657; }
+    .scope-transient { background: rgba(163,113,247,0.2); color: #a371f7; }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>💉 NestJS 依赖注入演示</h1>
+  <p class="subtitle">可视化理解 IoC 容器的工作原理和 Provider 生命周期</p>
+
+  <div class="container">
+    <div class="panel">
+      <h2>IoC 容器</h2>
+      <div class="ioc-view">
+        <div style="color:#8b949e;font-size:13px;">Module 声明</div>
+        <div class="providers" id="providers">
+          <div class="provider-box" id="p CatsService" onclick="inject('CatsService')">CatsService<span class="scope-badge scope-singleton">单例</span></div>
+          <div class="provider-box" id="p ConfigService" onclick="inject('ConfigService')">ConfigService<span class="scope-badge scope-singleton">单例</span></div>
+          <div class="provider-box" id="p LoggerService" onclick="inject('LoggerService')">LoggerService<span class="scope-badge scope-transient">瞬态</span></div>
+          <div class="provider-box" id="p RequestCtx" onclick="inject('RequestCtx')">RequestCtx<span class="scope-badge scope-request">请求</span></div>
+        </div>
+        <div class="arrow" id="arrow">⬇</div>
+        <div class="ioc-container" id="iocContainer">
+          <div class="ioc-label">IoC Container</div>
+          <div class="ioc-name" id="iocLabel">等待注入...</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="primary" onclick="runDI()">▶ 执行 DI 流程</button>
+        <button onclick="resetDI()">↺ 重置</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>代码示例</h2>
+      <div class="code-area" id="codeArea">
+<pre><span class="decorator">@Module</span>({
+  <span class="decorator">providers</span>: [<span class="type">CatsService</span>, <span class="type">ConfigService</span>],
+  <span class="decorator">controllers</span>: [<span class="type">CatsController</span>],
+})
+<span class="keyword">export class</span> <span class="type">CatsModule</span> {}
+
+// --- Provider 定义 ---
+<span class="decorator">@Injectable</span>()
+<span class="keyword">export class</span> <span class="type">CatsService</span> {
+  <span class="comment">// 单例 - 全应用共享</span>
+  <span class="keyword">constructor</span>(
+    <span class="keyword">private</span> config: <span class="type">ConfigService</span>,
+    <span class="keyword">private</span> logger: <span class="type">LoggerService</span>,  <span class="comment">// 注入</span>
+  ) {}
+}
+
+// --- Controller 注入 ---
+<span class="decorator">@Controller</span>(<span class="string">'cats'</span>)
+<span class="keyword">export class</span> <span class="type">CatsController</span> {
+  <span class="comment">// 通过构造函数注入 Provider</span>
+  <span class="keyword">constructor</span>(
+    <span class="keyword">private readonly</span> <span class="fn">catsService</span>: <span class="type">CatsService</span>,
+  ) {}
+}</pre>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:1/-1;">
+      <h2>注入阶段</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+        <div class="phase">
+          <div class="phase-title">🔍 解析阶段</div>
+          <div class="step-list" id="resolveSteps">
+            <div class="step" id="step1">1. 扫描 Module 的 providers 数组</div>
+            <div class="step" id="step2">2. 分析每个 Provider 的构造函数依赖</div>
+            <div class="step" id="step3">3. 构建依赖图 (DAG)</div>
+            <div class="step" id="step4">4. 检测循环依赖</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="phase-title">⚡ 实例化阶段</div>
+          <div class="step-list" id="initSteps">
+            <div class="step" id="step5">5. 按拓扑排序创建实例</div>
+            <div class="step" id="step6">6. 无依赖的 Provider 先创建</div>
+            <div class="step" id="step7">7. 依赖已满足的 Provider 后创建</div>
+            <div class="step" id="step8">8. 单例缓存实例</div>
+          </div>
+        </div>
+      </div>
+      <div class="log" id="log" style="margin-top:15px;">
+        <div class="log-entry info">[系统] 点击 "执行 DI 流程" 观看完整依赖注入过程</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let stepIndex = 0;
+    const steps = ['step1','step2','step3','step4','step5','step6','step7','step8'];
+    const messages = [
+      '🔍 扫描 Module 的 providers 数组...',
+      '🔍 分析 CatsService 的构造函数: constructor(config, logger)',
+      '🔍 构建依赖图: CatsService → ConfigService, LoggerService',
+      '✅ 未检测到循环依赖',
+      '⚡ 创建 ConfigService (无依赖，直接创建)',
+      '⚡ 创建 LoggerService (无依赖，直接创建)',
+      '⚡ 创建 CatsService (依赖已满足，注入 ConfigService 和 LoggerService)',
+      '✅ 单例缓存: ConfigService 和 CatsService 实例存储在 IoC 容器中'
+    ];
+
+    function addLog(msg, type='entry') {
+      const log = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML += `<div class="log-entry ${type}">[${time}] ${msg}</div>`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function clearSteps() {
+      steps.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) { el.classList.remove('active','done'); }
+      });
+    }
+
+    function runDI() {
+      if (stepIndex > 0) resetDI();
+      const arrow = document.getElementById('arrow');
+      arrow.classList.add('fast');
+      
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i >= steps.length) {
+          clearInterval(interval);
+          document.getElementById('iocContainer').classList.add('active');
+          document.getElementById('iocLabel').textContent = '✅ 注入完成';
+          addLog('🎉 依赖注入完成！所有 Provider 已就绪');
+          arrow.classList.remove('fast');
+          stepIndex = steps.length;
+          return;
+        }
+        if (i > 0) document.getElementById(steps[i-1]).classList.replace('active','done');
+        document.getElementById(steps[i]).classList.add('active');
+        addLog(messages[i], i < 4 ? 'info' : 'warn');
+        if (i === 6) {
+          document.getElementById('p CatsService').classList.add('injected');
+          document.getElementById('p ConfigService').classList.add('injected');
+          document.getElementById('p LoggerService').classList.add('injected');
+        }
+        i++;
+      }, 800);
+    }
+
+    function resetDI() {
+      stepIndex = 0;
+      clearSteps();
+      document.getElementById('iocContainer').classList.remove('active');
+      document.getElementById('iocLabel').textContent = '等待注入...';
+      document.querySelectorAll('.provider-box').forEach(p => p.classList.remove('injected'));
+      document.getElementById('arrow').classList.remove('fast');
+    }
+
+    function inject(name) {
+      document.getElementById('p ' + name).classList.add('injected');
+      addLog(`💉 注入 ${name} 到 IoC 容器`, 'info');
+      document.getElementById('iocLabel').textContent = name;
+      document.getElementById('iocContainer').classList.add('active');
+    }
+  </script>
+</body>
+</html>

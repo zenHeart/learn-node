@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NestJS 装饰器演示</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #1e1e2e; color: #cdd6f4; min-height: 100vh; padding: 20px; }
+    h1 { text-align: center; color: #cba6f7; margin-bottom: 8px; font-size: 1.8em; }
+    .subtitle { text-align: center; color: #6c7086; margin-bottom: 25px; font-size: 0.95em; }
+    .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .panel { background: #181825; border-radius: 12px; padding: 20px; border: 1px solid #313244; }
+    .panel h2 { color: #cba6f7; margin-bottom: 15px; font-size: 1.05em; }
+    .demo-area { background: #11111b; border-radius: 10px; padding: 20px; min-height: 200px; }
+    .request-box { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+    .method-btn { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; border: 1px solid; transition: all 0.2s; }
+    .method-btn.get { background: rgba(203,166,247,0.15); border-color: #cba6f7; color: #cba6f7; }
+    .method-btn.get.active { background: #cba6f7; color: #11111b; }
+    .method-btn.post { background: rgba(166,227,161,0.15); border-color: #a6e3a1; color: #a6e3a1; }
+    .method-btn.post.active { background: #a6e3a1; color: #11111b; }
+    .method-btn.put { background: rgba(249,226,175,0.15); border-color: #f9e2af; color: #f9e2af; }
+    .method-btn.put.active { background: #f9e2af; color: #11111b; }
+    .method-btn.delete { background: rgba(243,139,168,0.15); border-color: #f38ba8; color: #f38ba8; }
+    .method-btn.delete.active { background: #f38ba8; color: #11111b; }
+    .request-url { background: #11111b; border: 1px solid #313244; border-radius: 6px; padding: 10px 14px; font-family: monospace; font-size: 14px; color: #cdd6f4; width: 100%; outline: none; }
+    .request-url:focus { border-color: #cba6f7; }
+    .response-view { margin-top: 15px; }
+    .response-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .status-badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .status-200 { background: rgba(166,227,161,0.2); color: #a6e3a1; }
+    .status-201 { background: rgba(166,227,161,0.2); color: #a6e3a1; }
+    .status-400 { background: rgba(249,226,175,0.2); color: #f9e2af; }
+    .status-404 { background: rgba(243,139,168,0.2); color: #f38ba8; }
+    .response-body { background: #11111b; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 13px; line-height: 1.7; white-space: pre-wrap; color: #a6e3a1; }
+    .code-block { background: #11111b; border-radius: 8px; padding: 15px; font-family: 'Fira Code', monospace; font-size: 12.5px; line-height: 1.7; overflow-x: auto; }
+    .keyword { color: #cba6f7; }
+    .decorator { color: #f9e2af; }
+    .type { color: #89dceb; }
+    .string { color: #a6e3a1; }
+    .comment { color: #6c7086; font-style: italic; }
+    .param { color: #f38ba8; }
+    .fn { color: #89b4fa; }
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    button { background: #313244; color: #cdd6f4; border: 1px solid #45475a; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    button:hover { border-color: #cba6f7; }
+    .decorator-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 15px; }
+    .decorator-card { background: #11111b; border: 1px solid #313244; border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.3s; }
+    .decorator-card:hover { border-color: #cba6f7; transform: translateY(-2px); }
+    .decorator-card.active { border-color: #cba6f7; background: rgba(203,166,247,0.08); }
+    .decorator-card-title { color: #f9e2af; font-size: 14px; font-weight: bold; margin-bottom: 5px; }
+    .decorator-card-desc { color: #6c7086; font-size: 12px; }
+    .log { background: #11111b; border-radius: 8px; padding: 12px; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 12px; line-height: 1.8; margin-top: 15px; }
+    .log-entry { color: #a6e3a1; }
+    .log-entry.info { color: #89dceb; }
+    .log-entry.error { color: #f38ba8; }
+    .decorator-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    .decorator-table th { background: #313244; color: #cba6f7; padding: 8px 12px; text-align: left; }
+    .decorator-table td { padding: 8px 12px; border-bottom: 1px solid #313244; }
+    .decorator-table td:first-child { color: #f9e2af; }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>🎭 NestJS 装饰器演示</h1>
+  <p class="subtitle">交互式体验 @Get/@Post/@Body/@Query/@Param/@Headers 等核心装饰器</p>
+
+  <div class="container">
+    <div class="panel">
+      <h2>模拟 HTTP 请求</h2>
+      <div class="demo-area">
+        <div class="request-box">
+          <div class="method-btn get active" id="btnGet" onclick="setMethod('GET')">GET</div>
+          <div class="method-btn post" id="btnPost" onclick="setMethod('POST')">POST</div>
+          <div class="method-btn put" id="btnPut" onclick="setMethod('PUT')">PUT</div>
+          <div class="method-btn delete" id="btnDelete" onclick="setMethod('DELETE')">DELETE</div>
+        </div>
+        <input class="request-url" id="urlInput" value="/cats?page=1&limit=10" oninput="updateUrl()" />
+        <div style="margin-top:10px;">
+          <label style="color:#6c7086;font-size:13px;">请求体 (JSON):</label>
+          <textarea class="request-url" id="bodyInput" rows="4" style="margin-top:5px;font-size:12px;">{
+  "name": "Whiskers",
+  "age": 3,
+  "breed": "Persian"
+}</textarea>
+        </div>
+        <div class="controls">
+          <button class="primary" onclick="sendRequest()">🚀 发送请求</button>
+          <button onclick="loadExample('cats')">🐱 Cats 示例</button>
+          <button onclick="loadExample('users')">👤 Users 示例</button>
+        </div>
+        <div class="response-view" id="responseView" style="display:none;">
+          <div class="response-header">
+            <span class="status-badge" id="statusBadge">200 OK</span>
+            <span style="color:#6c7086;font-size:12px;" id="responseTime"></span>
+          </div>
+          <div class="response-body" id="responseBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>装饰器映射</h2>
+      <table class="decorator-table">
+        <thead>
+          <tr><th>装饰器</th><th>提取来源</th><th>示例</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>@Get('/cats')</td><td>—</td><td>路由</td></tr>
+          <tr><td>@Query('page')</td><td>URL ?page=1</td><td>查询参数</td></tr>
+          <tr><td>@Param('id')</td><td>URL /cats/:id</td><td>路径参数</td></tr>
+          <tr><td>@Body()</td><td>Request Body</td><td>请求体</td></tr>
+          <tr><td>@Headers('auth')</td><td>Header</td><td>请求头</td></tr>
+          <tr><td>@Cookies('sid')</td><td>Cookie</td><td>Cookie</td></tr>
+          <tr><td>@Ip()</td><td>Request</td><td>IP 地址</td></tr>
+        </tbody>
+      </table>
+      <div class="controls" style="margin-top:15px;">
+        <button onclick="showCode('param')">📋 参数装饰器</button>
+        <button onclick="showCode('full')">📋 完整示例</button>
+      </div>
+      <div class="code-block" id="codeBlock" style="margin-top:10px;">
+<pre><span class="decorator">@Controller</span>(<span class="string">'cats'</span>)
+<span class="keyword">export class</span> <span class="type">CatsController</span> {
+  <span class="decorator">@Get</span>()
+  <span class="fn">findAll</span>(<span class="decorator">@Query</span>(<span class="string">'page'</span>) page: <span class="type">number</span>,
+             <span class="decorator">@Query</span>(<span class="string">'limit'</span>) limit: <span class="type">number</span>) {
+    <span class="keyword">return</span> { page, limit };
+  }
+
+  <span class="decorator">@Post</span>()
+  <span class="fn">create</span>(<span class="decorator">@Body</span>() <span class="type">dto</span>: <span class="type">CreateCatDto</span>) {
+    <span class="keyword">return</span> <span class="keyword">this</span>.catsService.create(dto);
+  }
+}</pre>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column:1/-1;">
+      <h2>常见装饰器速查</h2>
+      <div class="decorator-grid">
+        <div class="decorator-card active" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@Get(@path?)</div>
+          <div class="decorator-card-desc">处理 GET 请求，可指定路径</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@Post(@path?)</div>
+          <div class="decorator-card-desc">处理 POST 请求</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@Put/@Patch/@Delete</div>
+          <div class="decorator-card-desc">PUT/PATCH/DELETE 请求</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@Body(@key?)</div>
+          <div class="decorator-card-desc">提取请求体，可指定字段</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@Query(@key?)</div>
+          <div class="decorator-card-desc">提取查询参数</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@Param(@key?)</div>
+          <div class="decorator-card-desc">提取路径参数</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@Headers(@key?)</div>
+          <div class="decorator-card-desc">提取请求头</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@HttpCode(code)</div>
+          <div class="decorator-card-desc">自定义响应状态码</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@UseGuards(...)</div>
+          <div class="decorator-card-desc">应用守卫</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@UsePipes(...)</div>
+          <div class="decorator-card-desc">应用管道验证</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@Injectable()</div>
+          <div class="decorator-card-desc">标记为可注入 Provider</div>
+        </div>
+        <div class="decorator-card" onclick="this.classList.toggle('active')">
+          <div class="decorator-card-title">@Module()</div>
+          <div class="decorator-card-desc">定义 NestJS 模块</div>
+        </div>
+      </div>
+      <div class="log" id="log">
+        <div class="log-entry info">[系统] 点击卡片可高亮，点击 "发送请求" 测试装饰器效果</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentMethod = 'GET';
+    const mockData = {
+      GET: {
+        '/cats?page=1&limit=10': { status: 200, body: { data: [{id:'1',name:'Whiskers',age:3,breed:'Persian'},{id:'2',name:'Mittens',age:2,breed:'Siamese'}], total:2, page:1, limit:10 } },
+        '/cats/1': { status: 200, body: { id:'1',name:'Whiskers',age:3,breed:'Persian',createdAt:'2026-01-15T10:00:00Z' } },
+        '/cats': { status: 200, body: { data: [], total: 0 } },
+      },
+      POST: {
+        '/cats': { status: 201, body: { id:'3',name:'Whiskers',age:3,breed:'Persian',createdAt:'2026-03-26T16:30:00Z' } },
+      },
+      PUT: {
+        '/cats/1': { status: 200, body: { id:'1',name:'Whiskers',age:4,breed:'Persian',updatedAt:'2026-03-26T16:30:00Z' } },
+      },
+      DELETE: {
+        '/cats/1': { status: 204, body: null },
+      }
+    };
+
+    function setMethod(m) {
+      currentMethod = m;
+      document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn' + m.charAt(0) + m.slice(1).toLowerCase()).classList.add('active');
+      addLog(`${m} 请求方法已选择`);
+    }
+
+    function updateUrl() {
+      addLog(`URL 更新为: ${document.getElementById('urlInput').value}`);
+    }
+
+    function sendRequest() {
+      const start = Date.now();
+      const url = document.getElementById('urlInput').value;
+      const body = document.getElementById('bodyInput').value;
+      const method = currentMethod;
+
+      addLog(`🚀 发送 ${method} ${url}`);
+
+      let response = mockData[method][url];
+      if (!response) {
+        if (method === 'GET' && url.match(/\/cats\/\d+/)) {
+          response = mockData.GET['/cats/1'];
+        } else {
+          response = { status: 404, body: { statusCode: 404, message: 'Not Found', error: 'Not Found' } };
+        }
+      }
+
+      const elapsed = Date.now() - start;
+      document.getElementById('statusBadge').textContent = `${response.status} ${response.status === 204 ? 'No Content' : 'OK'}`;
+      document.getElementById('statusBadge').className = `status-badge status-${response.status}`;
+      document.getElementById('responseTime').textContent = `${elapsed}ms`;
+      document.getElementById('responseBody').textContent = response.body ? JSON.stringify(response.body, null, 2) : '(空)';
+      document.getElementById('responseView').style.display = 'block';
+
+      addLog(`${method} ${url} → ${response.status}`, response.status >= 400 ? 'error' : 'entry');
+
+      if (response.status === 201) addLog('📝 @HttpCode(201) 装饰器生效！');
+      if (response.status === 204) addLog('🗑️ @HttpCode(204) DELETE 返回空响应');
+    }
+
+    function loadExample(type) {
+      if (type === 'cats') {
+        document.getElementById('urlInput').value = '/cats?page=1&limit=10';
+        document.getElementById('bodyInput').value = '{\n  "name": "Whiskers",\n  "age": 3,\n  "breed": "Persian"\n}';
+        setMethod('GET');
+      } else {
+        document.getElementById('urlInput').value = '/users/123';
+        document.getElementById('bodyInput').value = '{\n  "name": "Alice",\n  "email": "alice@example.com"\n}';
+        setMethod('GET');
+      }
+      addLog(`加载 ${type} 示例`);
+    }
+
+    function showCode(type) {
+      const block = document.getElementById('codeBlock');
+      if (type === 'param') {
+        block.innerHTML = `<pre><span class="decorator">@Get</span>(<span class="string">':id'</span>)
+<span class="keyword">async</span> <span class="fn">findOne</span>(
+  <span class="decorator">@Param</span>(<span class="string">'id'</span>) id: <span class="type">string</span>,
+  <span class="decorator">@Headers</span>(<span class="string">'authorization'</span>) auth: <span class="type">string</span>,
+) {
+  <span class="keyword">return</span> { id, hasAuth: !!auth };
+}
+
+<span class="decorator">@Post</span>()
+<span class="decorator">@HttpCode</span>(<span class="type">201</span>)
+<span class="fn">create</span>(<span class="decorator">@Body</span>(<span class="string">'name'</span>) name: <span class="type">string</span>,
+           <span class="decorator">@Body</span>() <span class="type">dto</span>: <span class="type">CreateCatDto</span>) {
+  <span class="keyword">return this</span>.catsService.create({ name, ...dto });
+}</pre>`;
+        addLog('显示参数装饰器代码');
+      } else {
+        block.innerHTML = `<pre><span class="decorator">@Controller</span>(<span class="string">'cats'</span>)
+<span class="keyword">export class</span> <span class="type">CatsController</span> {
+  <span class="decorator">@Get</span>()
+  <span class="fn">findAll</span>(<span class="decorator">@Query</span>(<span class="string">'page'</span>) page: <span class="type">number</span>,
+             <span class="decorator">@Query</span>(<span class="string">'limit'</span>) limit: <span class="type">number</span>) {
+    <span class="keyword">return</span> { page, limit };
+  }
+
+  <span class="decorator">@Post</span>()
+  <span class="decorator">@HttpCode</span>(<span class="type">201</span>)
+  <span class="fn">create</span>(<span class="decorator">@Body</span>() <span class="type">dto</span>: <span class="type">CreateCatDto</span>) {
+    <span class="keyword">return</span> <span class="keyword">this</span>.catsService.create(dto);
+  }
+}</pre>`;
+        addLog('显示完整示例代码');
+      }
+    }
+
+    function addLog(msg, type='entry') {
+      const log = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML += `<div class="log-entry ${type}">[${time}] ${msg}</div>`;
+      log.scrollTop = log.scrollHeight;
+    }
+  </script>
+</body>
+</html>
