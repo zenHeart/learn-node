@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Monorepo Lockfile 行为演示</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#000;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;--txt:#f5f5f7;--txt2:#86868b;--txt3:#515154;--acc:#0a84ff;--acc-d:rgba(10,132,255,.2);--grn:#30d158;--grn-d:rgba(48,209,88,.2);--yll:#ffd60a;--yll-d:rgba(255,214,10,.2);--red:#ff453a;--red-d:rgba(255,69,58,.2);--org:#ff9f0a;--org-d:rgba(255,159,10,.2);--brd:#2c2c2e;--brd2:#3a3a3c}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+.pw{max-width:1100px;margin:0 auto;padding:0 24px}
+.hero{padding:100px 0 60px;text-align:center;border-bottom:1px solid var(--brd)}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-bottom:16px}
+h1{font-size:clamp(36px,6vw,56px);font-weight:700;letter-spacing:-.025em;line-height:1.08;margin-bottom:20px;background:linear-gradient(135deg,#f5f5f7,#a1a1a6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{font-size:18px;color:var(--txt2);max-width:600px;margin:0 auto 40px}
+.meta{display:flex;justify-content:center;gap:32px;flex-wrap:wrap}
+.meta-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt3)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--acc)}
+.nav{position:sticky;top:0;z-index:100;background:rgba(0,0,0,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--brd)}
+.tabs{display:flex;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:16px 20px;font-size:13px;font-weight:500;color:var(--txt2);background:none;border:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s;font-family:inherit}
+.tab:hover{color:var(--txt)}
+.tab.on{color:var(--txt);border-bottom-color:var(--acc)}
+.sec{padding:80px 0;border-bottom:1px solid var(--brd)}
+.sec:last-child{border-bottom:none}
+.sec-hdr{margin-bottom:48px}
+.sec-num{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--acc);margin-bottom:8px}
+.sec-title{font-size:28px;font-weight:600;letter-spacing:-.02em;margin-bottom:12px}
+.sec-desc{font-size:16px;color:var(--txt2);max-width:640px}
+.card{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:28px;margin-bottom:16px;transition:border-color .2s}
+.card:hover{border-color:var(--brd2)}
+.card-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card-title{font-size:16px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.card-body{font-size:14px;color:var(--txt2);line-height:1.65}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.b-g{background:var(--grn-d);color:var(--grn)}.b-r{background:var(--red-d);color:var(--red)}.b-y{background:var(--yll-d);color:var(--yll)}.b-a{background:var(--acc-d);color:var(--acc)}.b-o{background:var(--org-d);color:var(--org)}
+.cb{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;overflow:hidden;margin:16px 0}
+.cb-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--brd)}
+.cb-fname{font-size:12px;font-family:monospace;color:var(--txt2)}
+.cb-lang{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--txt3)}
+.cb-body{padding:20px;font-family:monospace;font-size:13px;line-height:1.7;overflow-x:auto;white-space:pre}
+.cmt{color:#6a9955}.kw{color:#569cd6}.str{color:#ce9178}.num{color:#b5cea8}.ky{color:#9cdcfe}.bl{color:#569cd6}
+table{width:100%;border-collapse:collapse;font-size:14px;margin:16px 0}
+th{text-align:left;padding:12px 16px;background:var(--bg3);border:1px solid var(--brd);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--txt2)}
+td{padding:14px 16px;border:1px solid var(--brd);color:var(--txt2);vertical-align:top}
+tr:hover td{background:var(--bg4)}
+td:first-child{font-family:monospace;font-size:13px;color:var(--acc)}
+.flow{display:flex;flex-direction:column;gap:4px;margin:24px 0}
+.flow-item{display:flex;align-items:stretch}
+.flow-num{width:36px;min-height:52px;background:var(--acc-d);border:1px solid var(--acc);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--acc);flex-shrink:0;margin-right:12px}
+.flow-ct{flex:1;background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;justify-content:center}
+.flow-ttl{font-size:14px;font-weight:600;margin-bottom:2px}
+.flow-desc{font-size:12px;color:var(--txt3)}
+.flow-arr{text-align:center;padding:4px 0;color:var(--txt3);font-size:18px}
+.dp{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;overflow:hidden;margin:24px 0}
+.dp-tb{display:flex;flex-wrap:wrap;gap:8px;padding:16px;background:var(--bg3);border-bottom:1px solid var(--brd)}
+.dp-lbl{font-size:12px;color:var(--txt3);align-self:center;margin-right:4px}
+.dp-btn{padding:7px 14px;font-size:12px;font-weight:500;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;color:var(--txt);cursor:pointer;transition:all .2s;font-family:inherit}
+.dp-btn:hover{background:var(--bg4);border-color:var(--brd2)}
+.dp-btn.on{background:var(--acc-d);border-color:var(--acc);color:var(--acc)}
+.dp-out{padding:24px;min-height:200px;max-height:480px;overflow-y:auto;font-family:monospace;font-size:12.5px;line-height:1.75;color:var(--txt2)}
+.dp-out::-webkit-scrollbar{width:6px}.dp-out::-webkit-scrollbar-track{background:transparent}.dp-out::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
+.dp-out .ky{color:#9cdcfe}.dp-out .str{color:#ce9178}.dp-out .num{color:#b5cea8}.dp-out .cmt{color:#6a9955}.dp-out .kw{color:#569cd6}.dp-out .bl{color:#569cd6}.dp-out .ln{color:#555;user-select:none}
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--brd);border:1px solid var(--brd);border-radius:12px;overflow:hidden;margin:24px 0}
+.cc{background:var(--bg3);padding:24px}
+.cch{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+.ci{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.ci-npm{background:#cb3837;color:#fff}.ci-yarn{background:#2c8ebb;color:#fff}.ci-pnpm{background:#f69322;color:#fff}
+.cn{font-size:16px;font-weight:600}
+.clf{font-size:12px;font-family:monospace;color:var(--txt3);margin-bottom:20px}
+.ci-item{display:flex;gap:10px;margin-bottom:12px;font-size:13px}
+.ci-lbl{color:var(--txt3);min-width:90px}.ci-val{color:var(--txt2)}
+.sg{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:24px 0}
+.sc{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:24px;position:relative;overflow:hidden}
+.sc::before{content:"";position:absolute;top:0;left:0;right:0;height:3px}
+.sc-g::before{background:var(--grn)}.sc-r::before{background:var(--red)}.sc-y::before{background:var(--yll)}.sc-a::before{background:var(--acc)}.sc-o::before{background:var(--org)}
+.sc-n{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);margin-bottom:8px}
+.sc-t{font-size:15px;font-weight:600;margin-bottom:10px}
+.sc-d{font-size:13px;color:var(--txt2);line-height:1.6;margin-bottom:14px}
+.sc-rst{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600}
+.sc-g .sc-rst{color:var(--grn)}.sc-g .sc-rst .d{background:var(--grn)}.sc-r .sc-rst{color:var(--red)}.sc-r .sc-rst .d{background:var(--red)}.sc-y .sc-rst{color:var(--yll)}.sc-y .sc-rst .d{background:var(--yll)}.sc-a .sc-rst{color:var(--acc)}.sc-a .sc-rst .d{background:var(--acc)}.sc-o .sc-rst{color:var(--org)}.sc-o .sc-rst .d{background:var(--org)}
+.d{width:8px;height:8px;border-radius:50%;display:inline-block}
+.callout{display:flex;gap:14px;padding:16px 20px;border-radius:8px;margin:20px 0;font-size:14px;line-height:1.6}
+.callout-info{background:var(--acc-d);border:1px solid rgba(10,132,255,.2)}
+.callout-warn{background:var(--yll-d);border:1px solid rgba(255,214,10,.2)}
+.callout-ok{background:var(--grn-d);border:1px solid rgba(48,209,88,.2)}
+.callout-err{background:var(--red-d);border:1px solid rgba(255,69,58,.2)}
+.callout-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.callout-info .callout-icon{color:var(--acc)}.callout-warn .callout-icon{color:var(--yll)}.callout-ok .callout-icon{color:var(--grn)}.callout-err .callout-icon{color:var(--red)}
+.callout-cnt{color:var(--txt2)}.callout-cnt strong{color:var(--txt)}
+.rt{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:28px;font-family:monospace;font-size:13px;line-height:1.9;overflow-x:auto;margin:20px 0;white-space:pre}
+.tr{color:var(--txt);font-weight:600}.td{color:var(--acc)}.tf{color:var(--txt2)}.tw{color:var(--grn)}.tl{color:var(--yll)}.tcmt{color:var(--txt3)}
+.tl2{position:relative;padding-left:28px;margin:24px 0}
+.tl2::before{content:"";position:absolute;left:7px;top:8px;bottom:8px;width:2px;background:var(--brd)}
+.tli{position:relative;margin-bottom:28px}
+.tli::before{content:"";position:absolute;left:-24px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--acc);border:2px solid var(--bg)}
+.tli-g::before{background:var(--grn)}.tli-y::before{background:var(--yll)}.tli-r::before{background:var(--red)}
+.tli-t{font-size:14px;font-weight:600;margin-bottom:4px}
+.tli-d{font-size:13px;color:var(--txt2)}
+.tli-c{margin-top:8px;font-family:monospace;font-size:12px;color:var(--txt3)}
+.tci{flex:1;min-width:200px;background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:20px}
+.tci-icon{font-size:24px;margin-bottom:12px}
+.tci-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.tci-desc{font-size:12px;color:var(--txt2);line-height:1.6}
+.hidden{display:none!important}
+.h3{font-size:18px;margin:32px 0 16px;font-weight:600}
+code{background:var(--bg2);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:.9em}
+@media(max-width:768px){.hero{padding:70px 0 40px}.sec{padding:50px 0}.cg,.sg{grid-template-columns:1fr}.card-g{grid-template-columns:1fr}.meta{gap:16px}.tab{padding:14px 12px;font-size:12px}}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--brd2)}
+</style>
+</head>
+<body>
+<div class="hero">
+    <div class="pw">
+        <div class="eyebrow">Interactive Demo</div>
+        <h1>Monorepo Lockfile<br>行为图鉴</h1>
+        <p class="sub">深入理解 npm / yarn / pnpm 在 monorepo 场景下的 lockfile 行为差异,frozen-lockfile 配置效果,以及常见陷阱。</p>
+        <div class="meta">
+            <div class="meta-item"><div class="dot"></div>3 种包管理器对比</div>
+            <div class="meta-item"><div class="dot"></div>8 个真实场景</div>
+            <div class="meta-item"><div class="dot"></div>交互式模拟器</div>
+        </div>
+    </div>
+</div>
+<nav class="nav">
+    <div class="pw">
+        <div class="tabs" id="navTabs">
+            <button class="tab on" data-tab="tab-overview">总览</button>
+            <button class="tab" data-tab="tab-structure">Lockfile 结构</button>
+            <button class="tab" data-tab="tab-scenarios">场景解析</button>
+            <button class="tab" data-tab="tab-commands">install vs ci</button>
+            <button class="tab" data-tab="tab-cross">跨工具对比</button>
+            <button class="tab" data-tab="tab-best">最佳实践</button>
+            <button class="tab" data-tab="tab-sim">模拟器</button>
+        </div>
+    </div>
+
+<div id="tab-overview">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">01 — Overview</div><h2 class="sec-title">Monorepo 中的 Lockfile 挑战</h2><p class="sec-desc">单仓库中 lockfile 问题简单;monorepo 中多个包共享一个 lockfile,问题复杂得多。</p></div>
+<div class="rt"><span class="tr">my-monorepo/</span>
+<span class="td">├──</span> <span class="tf">package.json</span>          <span class="tcmt">← workspaces 配置</span>
+<span class="td">├──</span> <span class="tf">package-lock.json</span>      <span class="tcmt">← 所有 workspace 共享!</span>
+<span class="td">├──</span> <span class="tf">.npmrc</span>
+<span class="td">├──</span> <span class="td">node_modules/</span>          <span class="tcmt">← workspace 共享依赖</span>
+<span class="td">└──</span> <span class="td">packages/</span>
+<span class="td">    ├──</span> <span class="tw">pkg-a/</span>
+<span class="td">    │   ├──</span> <span class="tf">package.json</span>
+<span class="td">    │   └──</span> <span class="td">node_modules/</span>    <span class="tcmt">← workspace 本地依赖</span>
+<span class="td">    └──</span> <span class="tw">pkg-b/</span>
+<span class="td">        ├──</span> <span class="tf">package.json</span>
+<span class="td">        └──</span> <span class="td">node_modules/</span></div>
+<div class="callout callout-warn"><div class="callout-icon">⚠</div><div class="callout-cnt"><strong>核心矛盾:</strong> 构建脚本直接修改 <code>node_modules</code> 后,<strong>不会</strong>触发 <code>package-lock.json</code> 更新。下次 <code>npm install</code> 会把依赖恢复为 lockfile 中的版本,构建结果被覆盖。</div></div>
+<div class="sg">
+<div class="sc sc-g"><div class="sc-n">场景 1</div><div class="sc-t">子包 package.json 变化</div><div class="sc-d">直接修改 packages/pkg-a/package.json 中的 dependencies</div><div class="sc-rst"><div class="d"></div>会更新根 lockfile</div></div>
+<div class="sc sc-y"><div class="sc-n">场景 2</div><div class="sc-t">构建脚本修改 node_modules</div><div class="sc-d">构建过程中替换 node_modules,但没改 package.json</div><div class="sc-rst"><div class="d"></div>不会更新 lockfile</div></div>
+<div class="sc sc-y"><div class="sc-n">场景 3</div><div class="sc-t">npm install --prefix</div><div class="sc-d">在子包目录执行 npm install,lockfile 可能不同步</div><div class="sc-rst"><div class="d"></div>条件更新 lockfile</div></div>
+<div class="sc sc-r"><div class="sc-n">场景 4</div><div class="sc-t">npm ci 在 CI 中失败</div><div class="sc-d">本地修改了 node_modules 未同步到 lockfile,CI 用 npm ci</div><div class="sc-rst"><div class="d"></div>npm ci 报错退出</div></div>
+</div>
+</div>
+</section>
+</div>
+
+<div id="tab-structure" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">02 — Structure</div><h2 class="sec-title">Lockfile 在 Monorepo 中的结构</h2><p class="sec-desc">npm workspaces 中所有 workspace 的包都记录在根目录 package-lock.json 的同一个 packages 字段下,key 使用路径前缀区分。</p></div>
+<h3 class="h3">packages 字段 key 命名规则</h3>
+<table>
+<thead><tr><th>Key 格式</th><th>含义</th><th>示例</th></tr></thead>
+<tbody>
+<tr><td>""</td><td>根项目</td><td>根 package.json 的 name/version</td></tr>
+<tr><td>node_modules/&lt;pkg&gt;</td><td>根级别安装的共享包</td><td>node_modules/lodash</td></tr>
+<tr><td>packages/&lt;pkg-name&gt;</td><td>workspace 包自身</td><td>packages/pkg-a</td></tr>
+<tr><td>packages/&lt;pkg&gt;/node_modules/&lt;dep&gt;</td><td>workspace 私有依赖</td><td>packages/pkg-a/node_modules/axios</td></tr>
+<tr><td>node_modules/&lt;pkg&gt;/node_modules/&lt;nested&gt;</td><td>嵌套依赖</td><td>node_modules/express/node_modules/body-parser</td></tr>
+</tbody>
+</table>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">Monorepo packages 结构</span><span class="cb-lang">JSON</span></div>
+<div class="cb-body"><span class="ky">"name"</span>: <span class="str">"my-monorepo"</span>, <span class="ky">"lockfileVersion"</span>: <span class="num">3</span>,
+<span class="ky">"packages"</span>: {
+
+  <span class="cmt">// 根项目</span>
+  <span class="str">""</span>: { <span class="ky">"name"</span>: <span class="str">"my-monorepo"</span>, <span class="ky">"version"</span>: <span class="str">"1.0.0"</span> },
+
+  <span class="cmt">// 根级别依赖 (所有 workspace 共享)</span>
+  <span class="str">"node_modules/lodash"</span>: {
+    <span class="ky">"version"</span>: <span class="str">"4.17.21"</span>,
+    <span class="ky">"resolved"</span>: <span class="str">"https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"</span>,
+    <span class="ky">"integrity"</span>: <span class="str">"sha512-..."</span>
+  },
+
+  <span class="cmt">// workspace: pkg-a 自身</span>
+  <span class="str">"packages/pkg-a"</span>: {
+    <span class="ky">"name"</span>: <span class="str">"pkg-a"</span>, <span class="ky">"version"</span>: <span class="str">"1.0.0"</span>,
+    <span class="ky">"dependencies"</span>: { <span class="ky">"lodash"</span>: <span class="str">"4.17.21"</span> }
+  },
+
+  <span class="cmt">// workspace: pkg-a 的私有依赖</span>
+  <span class="str">"packages/pkg-a/node_modules/axios"</span>: {
+    <span class="ky">"version"</span>: <span class="str">"1.6.0"</span>,
+    <span class="ky">"resolved"</span>: <span class="str">"https://registry.npmjs.org/axios/-/axios-1.6.0.tgz"</span>,
+    <span class="ky">"integrity"</span>: <span class="str">"sha512-..."</span>
+  },
+
+  <span class="cmt">// workspace: pkg-b 自身</span>
+  <span class="str">"packages/pkg-b"</span>: {
+    <span class="ky">"name"</span>: <span class="str">"pkg-b"</span>, <span class="ky">"version"</span>: <span class="str">"1.0.0"</span>
+  }
+}</div>
+</div>
+<h3 class="h3">npm install 的更新流程</h3>
+<div class="flow">
+<div class="flow-item"><div class="flow-num">1</div><div class="flow-ct"><div class="flow-ttl">读取根 package.json 的 workspaces 配置</div><div class="flow-desc">发现 packages/* 下的所有子包</div></div></div>
+<div class="flow-arr">↓</div>
+<div class="flow-item"><div class="flow-num">2</div><div class="flow-ct"><div class="flow-ttl">遍历所有 workspace,读取 package.json</div><div class="flow-desc">解析每个包的 dependencies / devDependencies</div></div></div>
+<div class="flow-arr">↓</div>
+<div class="flow-item"><div class="flow-num">3</div><div class="flow-ct"><div class="flow-ttl">构建统一的依赖图 (dedupe)</div><div class="flow-desc">在根 node_modules 扁平化共享依赖,workspace 内部依赖保留本地</div></div></div>
+<div class="flow-arr">↓</div>
+<div class="flow-item"><div class="flow-num">4</div><div class="flow-ct"><div class="flow-ttl">写入根 package-lock.json</div><div class="flow-desc">所有 workspace 的依赖记录到同一个 lockfile,每个包路径作为 key 前缀</div></div></div>
+</div>
+<div class="callout callout-warn"><div class="callout-icon">⚠</div><div class="callout-cnt"><strong>关键点:</strong> npm install <strong>只检测 package.json 变化</strong>。如果只修改了 node_modules 而没改 package.json,lockfile 不会被更新,下次 install 会把依赖恢复为 lockfile 记录的版本。</div></div>
+</div>
+</section>
+</div>
+
+<div id="tab-scenarios" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">03 — Scenarios</div><h2 class="sec-title">场景解析:为什么 lockfile 不更新</h2><p class="sec-desc">理解 npm 的变更检测机制,就知道为什么在特定场景下 lockfile 不更新。</p></div>
+<h3 class="h3">npm 的变更检测逻辑</h3>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">npm install 决策流程</span><span class="cb-lang">Flow</span></div>
+<div class="cb-body"><span class="kw">执行</span> <span class="str">npm install</span>
+
+  ├─ 读取 package.json
+  │   └─ 解析 dependencies / devDependencies
+
+  ├─ 检查 package.json 是否有变化?
+  │   │
+  │   ├─ <span class="bl">YES</span>: 重新计算依赖 → <span class="kw">更新 lockfile</span> ✅
+  │   │
+  │   └─ <span class="bl">NO</span>: 检查 lockfile 是否存在?
+  │           │
+  │           ├─ <span class="bl">存在</span>: 基于 lockfile 安装 → <span class="kw">不更新 lockfile</span> ❌
+  │           │
+  │           └─ <span class="bl">不存在</span>: 重新解析 → <span class="kw">生成 lockfile</span> ✅
+
+  └─ 安装依赖到 node_modules</div>
+</div>
+<div class="tl2">
+<div class="tli tli-g"><div class="tli-t">修改子包 package.json</div><div class="tli-d">packages/pkg-a/package.json 中添加/修改了 lodash 版本</div><div class="tli-c">cd packages/pkg-a && npm install  →  ✅ 更新根 lockfile</div></div>
+<div class="tli tli-y"><div class="tli-t">构建脚本直接操作 node_modules</div><div class="tli-d">构建脚本删除了 node_modules 中的旧包,安装了新版,但没改 package.json</div><div class="tli-c">npm install  →  ❌ 不更新 lockfile,下次会覆盖 node_modules</div></div>
+<div class="tli tli-y"><div class="tli-t">手动修改 node_modules 中的文件</div><div class="tli-d">直接修改了 node_modules 里某个包的源码</div><div class="tli-c">npm 无法感知,lockfile 不变</div></div>
+<div class="tli tli-r"><div class="tli-t">CI 中使用 npm ci 但 lockfile 过期</div><div class="tli-d">本地修改了 node_modules 但 lockfile 没更新,CI 用 npm ci 会完全按 lockfile 安装</div><div class="tli-c">npm ci 报错退出,或安装的版本与预期不符</div></div>
+<div class="tli tli-g"><div class="tli-t">workspace 内部依赖使用 workspace: 协议</div><div class="tli-d">pkg-a 依赖 pkg-b,使用 workspace:* 协议</div><div class="tli-c">npm install 会自动解析并锁定为精确版本</div></div>
+</div>
+<h3 class="h3">npm install vs npm ci 在 monorepo 根目录的行为</h3>
+<table>
+<thead><tr><th>行为</th><th>npm install</th><th>npm ci</th></tr></thead>
+<tbody>
+<tr><td>基于 lockfile 安装</td><td>⚠️ 可能更新 lockfile</td><td>✅ 完全基于 lockfile</td></tr>
+<tr><td>读取 package.json 版本范围</td><td>✅ 用于确定依赖范围</td><td>❌ 完全忽略</td></tr>
+<tr><td>删除 node_modules</td><td>❌ 不会</td><td>✅ 每次都删除</td></tr>
+<tr><td>写入 lockfile</td><td>✅ 如果 package.json 变化</td><td>❌ 永远不会</td></tr>
+<tr><td>适合环境</td><td>本地开发</td><td>CI/CD</td></tr>
+<tr><td>lockfile 不存在时报错</td><td>✅ 自动生成</td><td>❌ 报错退出</td></tr>
+<tr><td>适合 monorepo</td><td>✅ 在根目录执行,处理所有 workspace</td><td>✅ 在根目录执行,完全锁定</td></tr>
+</tbody>
+</table>
+<div class="callout callout-err"><div class="callout-icon">✕</div><div class="callout-cnt"><strong>构建脚本大忌:</strong> 在构建过程中执行 <code>npm install</code> 或修改 <code>node_modules</code>,然后期望 lockfile 自动更新。这行不通——npm 的变更检测只看 package.json。</div></div>
+</div>
+</section>
+</div>
+
+<div id="tab-commands" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">04 — Commands</div><h2 class="sec-title">npm install vs npm ci 详细对比</h2><p class="sec-desc">在 monorepo 中,这两个命令的行为差异尤为重要。</p></div>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">npm install 执行流程</span><span class="cb-lang">Flow</span></div>
+<div class="cb-body"><span class="kw">npm install</span> <span class="cmt"># 在 monorepo 根目录</span>
+
+<span class="kw">Step 1:</span> 读取根 package.json 中的 workspaces 配置
+  └─ 发现 packages/* 下的所有 workspace
+
+<span class="kw">Step 2:</span> 读取所有 workspace 的 package.json
+  └─ 解析 dependencies / devDependencies
+
+<span class="kw">Step 3:</span> 读取根 package-lock.json (如果存在)
+  └─ 作为当前状态的参考
+
+<span class="kw">Step 4:</span> 比较 package.json 和 lockfile
+  ├─ 如果 lockfile 满足 package.json 范围 → 直接使用,不变更
+  └─ 如果有新增/变化 → 重新计算并更新 lockfile
+
+<span class="kw">Step 5:</span> 安装依赖到 node_modules
+
+<span class="kw">Step 6:</span> 写入/更新 package-lock.json (如有变化)</div>
+</div>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">npm ci 执行流程</span><span class="cb-lang">Flow</span></div>
+<div class="cb-body"><span class="kw">npm ci</span> <span class="cmt"># 在 monorepo 根目录</span>
+
+<span class="kw">Step 1:</span> 读取根 package-lock.json
+  └─ 必须存在,否则报错
+
+<span class="kw">Step 2:</span> 删除根 node_modules 和所有 workspace 的 node_modules
+  └─ 确保干净状态
+
+<span class="kw">Step 3:</span> 根据 lockfile 精确安装每个包
+  └─ 版本、resolved URL、integrity 必须完全匹配
+
+<span class="kw">Step 4:</span> 不读取 package.json 中的版本范围
+  └─ 完全按照 lockfile,不会更新
+
+<span class="kw">Step 5:</span> 验证安装结果
+  └─ 校验 integrity 哈希</div>
+</div>
+<div class="callout callout-ok"><div class="callout-icon">✓</div><div class="callout-cnt"><strong>推荐:</strong> 本地开发用 <code>npm install</code>,CI/CD 用 <code>npm ci</code>。monorepo 中两者都应在根目录执行。</div></div>
+<h3 class="h3">构建脚本修改 node_modules 的后果</h3>
+<div class="dp">
+<div class="dp-tb"><span class="dp-lbl">场景:</span>
+<button class="dp-btn on" data-demo="build-install">构建脚本 npm install</button>
+<button class="dp-btn" data-demo="build-direct">构建脚本直接改 node_modules</button>
+<button class="dp-btn" data-demo="build-ci">CI 中使用 npm ci</button>
+<button class="dp-btn" data-demo="build-correct">正确的构建流程</button>
+</div>
+<div class="dp-out" id="demo-output">点击上方按钮查看该场景的详细流程...</div>
+</div>
+</div>
+</section>
+</div>
+
+<div id="tab-cross" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">05 — Cross-Manager</div><h2 class="sec-title">跨包管理器对比</h2><p class="sec-desc">npm workspaces、yarn workspaces、pnpm workspaces 在 monorepo 和 lockfile 处理上的核心差异。</p></div>
+<div class="cg">
+<div class="cc">
+<div class="cch"><div class="ci ci-npm">npm</div><div class="cn">npm workspaces</div></div>
+<div class="clf">package-lock.json</div>
+<div class="ci-item"><div class="ci-lbl">确定性</div><div class="ci-val">npm ci 100%</div></div>
+<div class="ci-item"><div class="ci-lbl">Frozen 模式</div><div class="ci-val">npm ci</div></div>
+<div class="ci-item"><div class="ci-lbl">Workspace 协议</div><div class="ci-val">workspace:*</div></div>
+<div class="ci-item"><div class="ci-lbl">Lockfile 更新</div><div class="ci-val">npm install 可能更新</div></div>
+<div class="ci-item"><div class="ci-lbl">离线安装</div><div class="ci-val">需要 lock 文件</div></div>
+<div class="ci-item"><div class="ci-lbl">依赖结构</div><div class="ci-val">扁平化</div></div>
+</div>
+<div class="cc">
+<div class="cch"><div class="ci ci-yarn">yarn</div><div class="cn">yarn workspaces</div></div>
+<div class="clf">yarn.lock</div>
+<div class="ci-item"><div class="ci-lbl">确定性</div><div class="ci-val">--frozen-lockfile 100%</div></div>
+<div class="ci-item"><div class="ci-lbl">Frozen 模式</div><div class="ci-val">yarn install --frozen-lockfile</div></div>
+<div class="ci-item"><div class="ci-lbl">Workspace 协议</div><div class="ci-val">workspace:*</div></div>
+<div class="ci-item"><div class="ci-lbl">Lockfile 更新</div><div class="ci-val">yarn install 可能更新</div></div>
+<div class="ci-item"><div class="ci-lbl">离线安装</div><div class="ci-val">内置 .yarn/cache</div></div>
+<div class="ci-item"><div class="ci-lbl">依赖结构</div><div class="ci-val">扁平化</div></div>
+</div>
+<div class="cc">
+<div class="cch"><div class="ci ci-pnpm">pnpm</div><div class="cn">pnpm workspaces</div></div>
+<div class="clf">pnpm-lock.yaml</div>
+<div class="ci-item"><div class="ci-lbl">确定性</div><div class="ci-val">--frozen-lockfile 100%</div></div>
+<div class="ci-item"><div class="ci-lbl">Frozen 模式</div><div class="ci-val">pnpm install --frozen-lockfile</div></div>
+<div class="ci-item"><div class="ci-lbl">Workspace 协议</div><div class="ci-val">workspace:*</div></div>
+<div class="ci-item"><div class="ci-lbl">Lockfile 更新</div><div class="ci-val">pnpm install 可能更新</div></div>
+<div class="ci-item"><div class="ci-lbl">离线安装</div><div class="ci-val">内置 .pnpm-store</div></div>
+<div class="ci-item"><div class="ci-lbl">依赖结构</div><div class="ci-val">非扁平化 (symlink)</div></div>
+</div>
+</div>
+<h3 class="h3">npm workspaces lockfile 结构示例</h3>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">npm workspaces 依赖结构</span><span class="cb-lang">Tree</span></div>
+<div class="cb-body"><span class="cmt"># 扁平化结构: node_modules 下所有包在同一层级</span>
+my-monorepo/
+├── node_modules/
+│   ├── lodash <span class="cmt">← pkg-a 和 pkg-b 共享</span>
+│   ├── pkg-a → packages/pkg-a <span class="cmt">← workspace 链接</span>
+│   └── pkg-b → packages/pkg-b <span class="cmt">← workspace 链接</span>
+└── packages/
+    ├── pkg-a/
+    │   └── node_modules/ <span class="cmt">← 仅私有依赖</span>
+    │       └── axios
+    └── pkg-b/
+        └── node_modules/ <span class="cmt">← 仅私有依赖</span></div>
+</div>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">pnpm 依赖结构 (非扁平化)</span><span class="cb-lang">Tree</span></div>
+<div class="cb-body"><span class="cmt"># pnpm 使用 symlink,每个包有独立的 .pnpm 虚拟存储</span>
+my-monorepo/
+├── node_modules/
+│   ├── .pnpm/ <span class="cmt">← 真实包存储 (内容寻址)</span>
+│   │   ├── lodash@4.17.21/
+│   │   └── axios@1.6.0/
+│   ├── lodash <span class="cmt">← symlink 到 .pnpm/lodash@4.17.21</span>
+│   └── pkg-a <span class="cmt">← symlink</span>
+└── packages/
+    ├── pkg-a/
+    │   └── node_modules/
+    │       └── axios <span class="cmt">← symlink 到根 .pnpm/axios@1.6.0</span>
+    └── pkg-b/</div>
+</div>
+<div class="callout callout-info"><div class="callout-icon">→</div><div class="callout-cnt"><strong>pnpm 的优势:</strong> 内容寻址存储 (CAS) + symlink 模式,避免幽灵依赖 (phantom dependencies) 和扁平化依赖地狱,安装速度更快,磁盘利用率更高。</div></div>
+</div>
+</section>
+</div>
+
+<div id="tab-best" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">06 — Best Practices</div><h2 class="sec-title">最佳实践</h2><p class="sec-desc">不同场景下的推荐配置方案,确保 monorepo 的依赖锁定和构建确定性。</p></div>
+<div class="card-g">
+<div class="card">
+<div class="card-title"><span class="badge b-g">CI/CD</span>使用 frozen-lockfile</div>
+<div class="card-body">CI/CD 环境中强制锁定,不更新 lockfile。使用 <code>npm ci</code> 替代 <code>npm install</code>。monorepo 中在根目录执行。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-a">安全</span>构建脚本不修改 node_modules</div>
+<div class="card-body">构建过程中不应直接操作 node_modules。如需修改依赖,应修改 package.json 后执行 npm install。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-o">工具</span>使用 workspace 命令</div>
+<div class="card-body">在根目录使用 <code>npm install --workspace=pkg-a</code> 或 <code>npm run build --workspaces</code> 确保 lockfile 同步更新。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-y">版本</span>锁定 npm 版本</div>
+<div class="card-body">在 package.json engines 字段或 .nvmrc 文件中指定 npm 和 node 版本,避免不同环境使用不同版本。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-g">发布</span>固定发布流程</div>
+<div class="card-body">发布前执行 <code>npm install</code> 确保 lockfile 最新,<code>npm ci</code> 验证构建,再执行 <code>npm publish</code>。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-r">避坑</span>统一 registry</div>
+<div class="card-body">团队使用相同的 npm registry。在 .npmrc 中配置 <code>registry=https://registry.npmjs.org/</code>,避免因镜像差异导致包内容不同。</div>
+</div>
+</div>
+<h3 class="h3">CI/CD 配置示例</h3>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">.github/workflows/ci.yml</span><span class="cb-lang">YAML</span></div>
+<div class="cb-body"><span class="cmt"># GitHub Actions CI 配置</span>
+<span class="kw">name:</span> CI
+
+<span class="kw">on:</span> [push, pull_request]
+
+<span class="kw">jobs:</span>
+  <span class="kw">build:</span>
+    <span class="kw">runs-on:</span> ubuntu-latest
+    <span class="kw">steps:</span>
+      - <span class="kw">uses:</span> actions/checkout@v3
+
+      <span class="cmt"># 锁定 npm 版本 (可选但推荐)</span>
+      - <span class="kw">uses:</span> actions/setup-node@v3
+        <span class="kw">with:</span>
+          <span class="kw">node-version:</span> '20'
+          <span class="kw">cache:</span> 'npm' <span class="cmt"># 缓存 node_modules</span>
+
+      <span class="cmt"># ✅ 正确: 使用 npm ci (monorepo 根目录)</span>
+      - <span class="kw">run:</span> npm ci
+
+      <span class="cmt"># ✅ 正确: 构建所有 workspace</span>
+      - <span class="kw">run:</span> npm run build --workspaces
+
+      <span class="cmt"># ✅ 正确: 测试所有 workspace</span>
+      - <span class="kw">run:</span> npm test --workspaces
+
+      <span class="cmt"># ⚠️ 错误示例: 使用 npm install 而非 npm ci</span>
+      <span class="cmt"># - run: npm install  # ❌ 可能更新 lockfile</span>
+
+      <span class="cmt"># ⚠️ 错误示例: 在构建脚本中修改 node_modules</span>
+      <span class="cmt"># - run: npm install lodash@latest  # ❌ 不更新 lockfile,构建不一致</span></div>
+</div>
+<h3 class="h3">monorepo 工具选型</h3>
+<table>
+<thead><tr><th>工具</th><th>类型</th><th>lockfile</th><th>适用场景</th></tr></thead>
+<tbody>
+<tr><td>npm workspaces</td><td>内置 monorepo</td><td>package-lock.json</td><td>简单 monorepo,无特殊需求</td></tr>
+<tr><td>yarn workspaces</td><td>内置 monorepo</td><td>yarn.lock</td><td>需要离线缓存,yarn 用户</td></tr>
+<tr><td>pnpm workspaces</td><td>内置 monorepo</td><td>pnpm-lock.yaml</td><td>高性能,磁盘敏感项目</td></tr>
+<tr><td>lerna</td><td>monorepo 管理</td><td>各自 lockfile</td><td>传统发布型 monorepo</td></tr>
+<tr><td>nx</td><td>构建系统</td><td>project.json hashes</td><td>大规模项目,任务编排</td></tr>
+<tr><td>turborepo</td><td>构建系统</td><td>turbo.json</td><td>极速构建,增量构建</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+
+<div id="tab-sim" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">07 — Simulator</div><h2 class="sec-title">交互式模拟器</h2><p class="sec-desc">模拟不同场景下 lockfile 和 node_modules 的状态变化,直观理解其行为。</p></div>
+
+<div class="dp">
+<div class="dp-tb">
+<span class="dp-lbl">选择场景:</span>
+<button class="dp-btn on" data-sim="sim-1">本地开发:修改 package.json</button>
+<button class="dp-btn" data-sim="sim-2">构建脚本修改 node_modules</button>
+<button class="dp-btn" data-sim="sim-3">CI 使用 npm ci</button>
+<button class="dp-btn" data-sim="sim-4">workspace 内部依赖</button>
+</div>
+<div class="dp-out" id="sim-output">点击按钮查看场景模拟...</div>
+</div>
+
+<div class="callout callout-info"><div class="callout-icon">ℹ</div><div class="callout-cnt">模拟器展示了不同操作对 <code>package-lock.json</code> 和 <code>node_modules</code> 的影响。<span class="b badge b-g">绿色</span>表示更新,<span class="b badge b-y">黄色</span>表示条件更新,<span class="b badge b-r">红色</span>表示无变化。</div></div>
+
+<h3 class="h3">命令参考卡片</h3>
+<div class="card-g">
+<div class="card">
+<div class="card-title"><span class="badge b-a">npm</span>本地开发</div>
+<div class="card-body"><pre style="font-family:monospace;font-size:12px;margin:8px 0">npm install          <span class="cmt"># 安装,可能更新 lockfile</span>
+npm install lodash   <span class="cmt"># 添加依赖,更新 lockfile</span>
+npm update lodash    <span class="cmt"># 更新到最新,更新 lockfile</span></pre></div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-a">npm</span>CI/CD</div>
+<div class="card-body"><pre style="font-family:monospace;font-size:12px;margin:8px 0">npm ci              <span class="cmt"># 完全基于 lockfile,从不更新</span>
+npm ci --prefer-offline  <span class="cmt"># 优先使用缓存</span></pre></div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-a">npm</span>Workspace 操作</div>
+<div class="card-body"><pre style="font-family:monospace;font-size:12px;margin:8px 0">npm install --workspace=pkg-a
+npm install lodash -w pkg-a
+npm run build --workspaces
+npm ls --workspace=pkg-a</pre></div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-o">yarn</span>Frozen</div>
+<div class="card-body"><pre style="font-family:monospace;font-size:12px;margin:8px 0">yarn install --frozen-lockfile  <span class="cmt"># CI 推荐</span>
+yarn install                <span class="cmt"># 可能更新 lockfile</span></pre></div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-y">pnpm</span>Frozen</div>
+<div class="card-body"><pre style="font-family:monospace;font-size:12px;margin:8px 0">pnpm install --frozen-lockfile  <span class="cmt"># CI 推荐</span>
+pnpm install                 <span class="cmt"># 可能更新 lockfile</span></pre></div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-g">验证</span>检查工具</div>
+<div class="card-body"><pre style="font-family:monospace;font-size:12px;margin:8px 0">npm ls                 <span class="cmt"># 查看依赖树</span>
+npm outdated            <span class="cmt"># 检查过时依赖</span>
+npm audit              <span class="cmt"># 安全审计</span></pre></div>
+</div>
+</div>
+</div>
+</section>
+</div>
+
+<script>
+(function() {
+  function switchTab(target) {
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('on'); });
+    document.querySelectorAll('[id^="tab-"]').forEach(function(p) { p.classList.add('hidden'); });
+    var panel = document.getElementById(target);
+    if (panel) panel.classList.remove('hidden');
+    var activeTab = document.querySelector('.tab[data-tab="' + target + '"]');
+    if (activeTab) activeTab.classList.add('on');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.querySelectorAll('.tab').forEach(function(tab) {
+    tab.addEventListener('click', function() { switchTab(this.getAttribute('data-tab')); });
+  });
+
+  var demos = {
+    'build-install': '<span class="cmt">// 场景: 构建脚本中执行 npm install</span>\n\n<span class="kw">1. package.json:</span> <span class="str">"lodash": "^4.17.20"</span>\n<span class="kw">2. package-lock.json:</span> lodash@<span class="bl">4.17.20</span>\n\n<span class="kw">3. 构建脚本执行:</span>\n<span class="str">npm install lodash@latest</span>\n\n<span class="kw">4. 实际 node_modules:</span> lodash@<span class="bl">4.17.21</span> <span class="cmt">← 新版安装了</span>\n\n<span class="kw">5. package-lock.json:</span> lodash@<span class="bl">4.17.20</span> <span class="cmt">← 没更新!</span>\n\n<span class="kw">6. 下次 npm install:</span>\n→ 读取 lockfile: 4.17.20\n→ node_modules 被覆盖回 <span class="bl">4.17.20</span>\n→ <span class="red">构建结果被覆盖!</span>',
+    'build-direct': '<span class="cmt">// 场景: 构建脚本直接操作 node_modules</span>\n\n<span class="kw">1. 当前状态:</span> lockfile 和 node_modules 都是 4.17.20\n\n<span class="kw">2. 构建脚本:</span>\n<span class="str">rm -rf node_modules/lodash</span>\n<span class="str">npm install lodash@4.17.21</span>\n\n<span class="kw">3. 实际 node_modules:</span> lodash@<span class="bl">4.17.21</span> <span class="cmt">← 手动替换了</span>\n\n<span class="kw">4. package-lock.json:</span> <span class="bl">4.17.20</span> <span class="cmt">← 纹丝不动!</span>\n\n<span class="kw">5. npm 的判断:</span>\n├─ package.json 未变化\n├─ lockfile 存在且满足 ^4.17.20\n└─ <span class="red">不做任何更新</span>\n\n<span class="kw">6. 下次 npm install:</span>\n→ 恢复到 lockfile 版本: <span class="bl">4.17.20</span>\n→ <span class="red">构建修改丢失!</span>',
+    'build-ci': '<span class="cmt">// 场景: CI 中使用 npm ci</span>\n\n<span class="kw">本地:</span> 手动把 lodash 换成 4.17.21\n├─ node_modules: <span class="bl">4.17.21</span>\n└─ <span class="red">lockfile 未更新 (package.json 没改)</span>\n\n<span class="kw">提交:</span>\n<span class="str">git add .</span>\n<span class="str">git push</span>\n\n<span class="kw">CI (npm ci):</span>\n├─ 读取 lockfile: lodash@<span class="bl">4.17.20</span>\n├─ 删除 node_modules\n├─ 安装 <span class="bl">4.17.20</span>\n└─ <span class="red">安装的是旧版本!</span>\n\n<span class="kw">结果:</span> 本地通过,CI 失败\n└─ <span class="red">"works on my machine"</span>',
+    'build-correct': '<span class="cmt">// 场景: 正确的构建流程</span>\n\n<span class="kw">Step 1:</span> <span class="str">npm install lodash@latest --save</span>\n├─ package.json: <span class="str">"lodash": "^4.17.21"</span>\n├─ package-lock.json: <span class="bl">4.17.21</span> ✅ 已更新\n└─ node_modules: <span class="bl">4.17.21</span>\n\n<span class="kw">Step 2:</span>\n<span class="str">git add package.json package-lock.json</span>\n<span class="str">git commit -m "deps: update lodash"</span>\n\n<span class="kw">Step 3: CI (npm ci)</span>\n├─ 安装 <span class="bl">4.17.21</span>\n└─ <span class="grn">✅ 与本地一致!</span>\n\n<span class="kw">关键:</span> 永远通过改 package.json 来更新依赖'
+  };
+
+  var sims = {
+    'sim-1': '<span class="cmt">// 场景1: 本地开发 - 修改 package.json</span>\n\n<span class="kw">初始:</span> package.json: lodash ^4.17.20, lockfile: 4.17.20\n\n<span class="kw">操作:</span> <span class="str">npm install lodash@4.17.21 --save</span>\n\n<span class="kw">结果:</span>\n├─ package.json: <span class="str">"lodash": "^4.17.21"</span>\n├─ lockfile: <span class="bl">4.17.21</span> ✅\n└─ <span class="grn">lockfile 已更新</span>',
+    'sim-2': '<span class="cmt">// 场景2: 构建脚本直接修改 node_modules</span>\n\n<span class="kw">错误操作:</span> <span class="str">npm install lodash@latest --prefix packages/pkg-a</span>\n\n<span class="kw">结果:</span>\n├─ package.json: <span class="str">"lodash"</span>: <span class="str">"^4.17.20"</span> <span class="cmt">← 没变!</span>\n├─ lockfile: <span class="bl">4.17.20</span> <span class="cmt">← 没变!</span>\n└─ node_modules: <span class="bl">4.17.21</span> <span class="cmt">← 变了</span>\n\n<span class="kw">下次 npm install:</span>\n→ 恢复到 <span class="bl">4.17.20</span> → <span class="red">构建修改丢失</span>',
+    'sim-3': '<span class="cmt">// 场景3: CI 中使用 npm ci</span>\n\n<span class="kw">开发者本地:</span> 手动换成 lodash 4.17.21\n├─ lockfile: <span class="bl">4.17.20</span>\n└─ node_modules: <span class="bl">4.17.21</span>\n\n<span class="kw">CI (npm ci):</span>\n├─ 读取 lockfile: <span class="bl">4.17.20</span>\n├─ 删除 node_modules\n├─ 安装 <span class="bl">4.17.20</span>\n└─ <span class="red">与本地不一致!</span>',
+    'sim-4': '<span class="cmt">// 场景4: workspace 内部依赖</span>\n\n<span class="kw">package.json (pkg-a):</span>\n<span class="str">"pkg-b"</span>: <span class="str">"workspace:*"</span>\n\n<span class="kw">package-lock.json 解析后:</span>\n<span class="str">"packages/pkg-a"</span>: { <span class="ky">"pkg-b"</span>: <span class="str">"1.0.0"</span> }\n<span class="str">"packages/pkg-b"</span>: { <span class="ky">"version"</span>: <span class="str">"1.0.0"</span> }\n\n<span class="kw">结果:</span> workspace 协议正确解析为精确版本\n└─ <span class="grn">✅ workspace 协议正确解析</span>'
+  };
+
+  document.querySelectorAll('.dp-btn[data-demo]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var demo = this.getAttribute('data-demo');
+      var output = document.getElementById('demo-output');
+      document.querySelectorAll('.dp-btn[data-demo]').forEach(function(b) { b.classList.remove('on'); });
+      this.classList.add('on');
+      output.innerHTML = demos[demo] || '选择一个场景';
+    });
+  });
+
+  document.querySelectorAll('.dp-btn[data-sim]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var sim = this.getAttribute('data-sim');
+      var output = document.getElementById('sim-output');
+      document.querySelectorAll('.dp-btn[data-sim]').forEach(function(b) { b.classList.remove('on'); });
+      this.classList.add('on');
+      output.innerHTML = sims[sim] || '选择一个场景';
+    });
+  });
+})();
+</script>
+</body>
+</html>
+
