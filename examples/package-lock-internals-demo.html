@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>package-lock.json 内部机制 — 交互式演示</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0c;--bg2:#111114;--bg3:#18181c;--bg4:#222228;--bg5:#2a2a32;
+  --txt:#e8e8ed;--txt2:#9898a4;--txt3:#5c5c6e;
+  --acc:#5e6ad2;--acc2:#8b94ef;--acc-d:rgba(94,106,210,.15);
+  --grn:#30a46c;--grn-d:rgba(48,164,108,.15);
+  --yll:#f5c518;--yll-d:rgba(245,197,24,.15);
+  --red:#e5484d;--red-d:rgba(229,72,77,.15);
+  --org:#f76b15;--org-d:rgba(247,107,21,.15);
+  --prp:#ab5bd0;--prp-d:rgba(171,91,208,.15);
+  --brd:#2c2c34;--brd2:#3a3a46;
+  --hl:#c8e6ff;--hl-bg:rgba(94,162,255,.1);
+}
+html{font-size:16px;scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--txt);line-height:1.6;min-height:100vh}
+
+/* ── Layout ── */
+.pw{max-width:1160px;margin:0 auto;padding:0 28px}
+
+/* ── Hero ── */
+.hero{padding:96px 0 56px;text-align:center;border-bottom:1px solid var(--brd)}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--acc2);margin-bottom:16px}
+h1{font-size:clamp(36px,6vw,58px);font-weight:700;letter-spacing:-.03em;line-height:1.07;margin-bottom:20px;background:linear-gradient(135deg,#e8e8ed 40%,#8b94ef);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{font-size:17px;color:var(--txt2);max-width:560px;margin:0 auto 40px;line-height:1.65}
+.meta{display:flex;justify-content:center;gap:28px;flex-wrap:wrap}
+.meta-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt3)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--acc2)}
+
+/* ── Nav ── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(10,10,12,.88);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--brd)}
+.tabs{display:flex;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:15px 20px;font-size:13px;font-weight:500;color:var(--txt2);background:none;border:none;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s;font-family:inherit}
+.tab:hover{color:var(--txt)}
+.tab.on{color:var(--acc2);border-bottom-color:var(--acc2)}
+
+/* ── Section ── */
+.sec{padding:80px 0;border-bottom:1px solid var(--brd)}
+.sec:last-child{border-bottom:none}
+.sec-hdr{margin-bottom:44px}
+.sec-num{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--acc2);margin-bottom:8px}
+.sec-title{font-size:28px;font-weight:600;letter-spacing:-.02em;margin-bottom:12px}
+.sec-desc{font-size:15px;color:var(--txt2);max-width:640px;line-height:1.7}
+
+/* ── Panel / Card ── */
+.card{background:var(--bg3);border:1px solid var(--brd);border-radius:14px;padding:28px;margin-bottom:16px;transition:border-color .2s}
+.card:hover{border-color:var(--brd2)}
+.card-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card-title{font-size:16px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+
+/* ── Code Block ── */
+.cb{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;overflow:hidden;margin:20px 0}
+.cb-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--bg3);border-bottom:1px solid var(--brd)}
+.cb-fname{font-size:12px;font-family:ui-monospace,monospace;color:var(--txt2)}
+.cb-lang{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3)}
+.cb-body{padding:22px;font-family:ui-monospace,"SF Mono",monospace;font-size:12.5px;line-height:1.8;overflow-x:auto;white-space:pre}
+.cb-body .ln{display:inline-block;width:28px;color:var(--txt3);user-select:none;text-align:right;margin-right:16px;flex-shrink:0}
+
+/* syntax */
+.cmt{color:#6a9955}.kw{color:#569cd6}.str{color:#ce9178}.num{color:#b5cea8}
+.ky{color:#9cdcfe}.bl{color:#569cd6}.fn{color:#dcdcaa}.op{color:#d4d4d4}
+.hl{background:var(--hl-bg);border-radius:3px;padding:1px 4px}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;font-size:14px;margin:20px 0;border-radius:10px;overflow:hidden;border:1px solid var(--brd)}
+th{text-align:left;padding:13px 18px;background:var(--bg3);border-bottom:1px solid var(--brd);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--txt2)}
+td{padding:14px 18px;border-top:1px solid var(--brd);color:var(--txt2);vertical-align:top}
+tr:hover td{background:var(--bg3)}
+td:first-child{font-family:ui-monospace,monospace;font-size:13px;color:var(--acc2)}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.04em}
+.b-g{background:var(--grn-d);color:var(--grn)}.b-r{background:var(--red-d);color:var(--red)}
+.b-y{background:var(--yll-d);color:var(--yll)}.b-a{background:var(--acc-d);color:var(--acc2)}
+.b-o{background:var(--org-d);color:var(--org)}.b-p{background:var(--prp-d);color:var(--prp)}
+
+/* ── Demo Panel ── */
+.dp{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;overflow:hidden;margin:24px 0}
+.dp-tb{display:flex;flex-wrap:wrap;gap:8px;padding:16px 18px;background:var(--bg3);border-bottom:1px solid var(--brd)}
+.dp-lbl{font-size:12px;color:var(--txt3);align-self:center;margin-right:4px;white-space:nowrap}
+.dp-btn{padding:7px 14px;font-size:12px;font-weight:500;background:var(--bg2);border:1px solid var(--brd);border-radius:6px;color:var(--txt);cursor:pointer;transition:all .18s;font-family:inherit;white-space:nowrap}
+.dp-btn:hover{background:var(--bg4);border-color:var(--brd2)}
+.dp-btn.on{background:var(--acc-d);border-color:var(--acc);color:var(--acc2)}
+.dp-out{padding:24px;min-height:220px;font-family:ui-monospace,"SF Mono",monospace;font-size:12.5px;line-height:1.8;color:var(--txt2);max-height:520px;overflow-y:auto}
+.dp-out::-webkit-scrollbar{width:6px}.dp-out::-webkit-scrollbar-track{background:transparent}.dp-out::-webkit-scrollbar-thumb{background:var(--brd);border-radius:3px}
+.dp-out .ky{color:#9cdcfe}.dp-out .str{color:#ce9178}.dp-out .num{color:#b5cea8}
+.dp-out .cmt{color:#6a9955}.dp-out .kw{color:#569cd6}.dp-out .bl{color:#569cd6}
+.dp-out .ln{color:#3a3a48;user-select:none}.dp-out .red{color:#f85149}.dp-out .grn{color:#3fb950}
+
+/* ── Callout ── */
+.callout{display:flex;gap:14px;padding:16px 20px;border-radius:10px;margin:20px 0;font-size:14px;line-height:1.65}
+.callout-info{background:var(--acc-d);border:1px solid rgba(94,106,210,.2)}
+.callout-warn{background:var(--yll-d);border:1px solid rgba(245,197,24,.2)}
+.callout-ok{background:var(--grn-d);border:1px solid rgba(48,164,108,.2)}
+.callout-err{background:var(--red-d);border:1px solid rgba(229,72,77,.2)}
+.callout-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.callout-info .callout-icon{color:var(--acc2)}.callout-warn .callout-icon{color:var(--yll)}
+.callout-ok .callout-icon{color:var(--grn)}.callout-err .callout-icon{color:var(--red)}
+.callout-cnt{color:var(--txt2)}.callout-cnt strong{color:var(--txt)}
+
+/* ── Tree Viz ── */
+.tv{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:28px;margin:20px 0;overflow-x:auto}
+.tv-row{display:flex;align-items:center;min-height:32px}
+.tv-indent{display:flex;align-items:center}
+.tv-vline{width:1px;height:100%;min-height:20px;background:var(--brd2);margin-right:12px}
+.tv-hline{width:12px;height:1px;background:var(--brd2);flex-shrink:0}
+.tv-node{display:flex;align-items:center;gap:8px;padding:3px 0;flex-shrink:0}
+.tv-pkg{font-family:ui-monospace,monospace;font-size:13px;font-weight:600;border-radius:6px;padding:2px 8px}
+.tv-root{background:var(--acc-d);color:var(--acc2);border:1px solid rgba(94,106,210,.3)}
+.tv-d1{background:var(--grn-d);color:var(--grn);border:1px solid rgba(48,164,108,.3)}
+.tv-d2{background:var(--yll-d);color:var(--yll);border:1px solid rgba(245,197,24,.3)}
+.tv-d3{background:var(--org-d);color:var(--org);border:1px solid rgba(247,107,21,.3)}
+.tv-d4{background:var(--prp-d);color:var(--prp);border:1px solid rgba(171,91,208,.3)}
+.tv-ver{font-size:11px;font-family:ui-monospace,monospace;color:var(--txt3);margin-left:4px}
+
+/* ── Tree SVG ── */
+.tree-wrap{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:28px;margin:20px 0;overflow:auto;min-height:300px}
+.tree-wrap svg{font-family:ui-monospace,monospace}
+
+/* ── Flow Steps ── */
+.flow{display:flex;flex-direction:column;gap:4px;margin:24px 0}
+.flow-item{display:flex;align-items:stretch}
+.flow-num{width:36px;min-height:52px;background:var(--acc-d);border:1px solid rgba(94,106,210,.4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--acc2);flex-shrink:0;margin-right:14px}
+.flow-ct{flex:1;background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;justify-content:center}
+.flow-ttl{font-size:14px;font-weight:600;margin-bottom:3px}
+.flow-desc{font-size:12px;color:var(--txt3)}
+.flow-arr{text-align:center;padding:5px 0;color:var(--txt3);font-size:18px}
+
+/* ── Version Picker ── */
+.ver-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:20px 0}
+.ver-opt{background:var(--bg3);border:2px solid var(--brd);border-radius:10px;padding:18px;cursor:pointer;transition:all .2s;font-family:inherit;text-align:left;width:100%}
+.ver-opt:hover{border-color:var(--brd2);background:var(--bg4)}
+.ver-opt.selected{border-color:var(--acc);background:var(--acc-d)}
+.ver-opt .pkg-name{font-family:ui-monospace;font-size:13px;font-weight:600;color:var(--txt);margin-bottom:6px}
+.ver-opt .pkg-range{font-size:12px;color:var(--txt3)}
+.ver-opt .pkg-result{font-size:12px;font-weight:600;margin-top:8px;padding-top:8px;border-top:1px solid var(--brd)}
+
+/* ── Animations ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease forwards}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulse{animation:pulse 1.5s ease infinite}
+
+/* ── Misc ── */
+.hidden{display:none!important}
+.h3{font-size:18px;margin:32px 0 14px;font-weight:600}
+code{background:var(--bg2);padding:2px 7px;border-radius:4px;font-family:ui-monospace,monospace;font-size:.9em}
+.hr{border:none;border-top:1px solid var(--brd);margin:40px 0}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+
+/* Grid 3col */
+.cg3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--brd);border:1px solid var(--brd);border-radius:14px;overflow:hidden;margin:24px 0}
+.cg3c{background:var(--bg3);padding:24px}
+.cg3h{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.cg3icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.cg3name{font-size:16px;font-weight:600}
+.cg3lf{font-size:11px;font-family:ui-monospace,monospace;color:var(--txt3);margin-bottom:16px}
+.cg3item{display:flex;gap:10px;margin-bottom:11px;font-size:13px}
+.cg3lbl{color:var(--txt3);min-width:80px;flex-shrink:0}.cg3val{color:var(--txt2)}
+
+/* JSON syntax colors */
+.jk{color:#9cdcfe}.jv{color:#ce9178}.jn{color:#b5cea8}.jb{color:#569cd6}
+.jc{color:#6a9955}
+
+/* Comparison rows */
+.crow{display:flex;align-items:center;padding:14px 0;border-bottom:1px solid var(--brd);gap:16px;font-size:14px}
+.crow:last-child{border-bottom:none}
+.crow-l{flex:0 0 160px;font-weight:600;font-size:13px}
+.crow-v{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* Diff viewer */
+.diff{font-family:ui-monospace,monospace;font-size:12px;line-height:1.9;overflow-x:auto}
+.diff-line{padding:1px 14px;white-space:nowrap}
+.diff-del{background:rgba(248,81,73,.12)}.diff-del .diff-sym{color:#f85149;margin-right:10px}
+.diff-add{background:rgba(63,185,80,.12)}.diff-add .diff-sym{color:#3fb950;margin-right:10px}
+.diff-same{color:var(--txt3)}
+.diff-hdr{padding:8px 14px;background:var(--bg4);color:var(--txt3);font-size:11px;letter-spacing:.05em}
+
+/* Tooltip */
+[data-tip]{position:relative;cursor:help}
+[data-tip]::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1f;border:1px solid var(--brd2);color:var(--txt);font-size:12px;padding:6px 12px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .2s;z-index:10}
+[data-tip]:hover::after{opacity:1}
+
+@media(max-width:768px){
+  .hero{padding:64px 0 36px}
+  .sec{padding:48px 0}
+  .cg3{grid-template-columns:1fr}
+  .card-g{grid-template-columns:1fr}
+  .ver-grid{grid-template-columns:1fr}
+  .meta{gap:14px}
+  .tab{padding:13px 12px;font-size:12px}
+}
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--brd);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--brd2)}
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="pw">
+    <div class="eyebrow">Interactive Demo · package-lock.json</div>
+    <h1>依赖锁定的<br>内部世界</h1>
+    <p class="sub">深入理解 package-lock.json 的数据结构、依赖树锁定机制、版本冲突处理,以及为什么有 lockfile 仍可能装到不同版本。</p>
+    <div class="meta">
+      <div class="meta-item"><div class="dot"></div>lockfileVersion 3 种格式</div>
+      <div class="meta-item"><div class="dot"></div>5 个真实冲突场景</div>
+      <div class="meta-item"><div class="dot"></div>可交互式模拟器</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="pw">
+    <div class="tabs">
+      <button class="tab on" data-tab="tab-struct">Lockfile 结构</button>
+      <button class="tab" data-tab="tab-tree">依赖树可视化</button>
+      <button class="tab" data-tab="tab-resolve">解析流程</button>
+      <button class="tab" data-tab="tab-conflict">版本冲突</button>
+      <button class="tab" data-tab="tab-version">lockfileVersion</button>
+      <button class="tab" data-tab="tab-sim">模拟器</button>
+      <button class="tab" data-tab="tab-compare">npm vs yarn vs pnpm</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     TAB 1: Lockfile 结构
+═══════════════════════════════════════════ -->
+<div id="tab-struct">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">01 — Structure</div><h2 class="sec-title">package-lock.json 数据结构</h2><p class="sec-desc">npm 9+ 使用的 lockfileVersion 3 格式,以扁平化的 <code>packages</code> 字段为核心。</p></div>
+
+<h3 class="h3">顶层结构一览</h3>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">package-lock.json</span><span class="cb-lang">JSON</span></div>
+<div class="cb-body">{
+  <span class="jk">"name"</span>: <span class="jv">"my-app"</span>,                 <span class="jc">// 项目名,必须与 package.json 一致</span>
+  <span class="jk">"version"</span>: <span class="jv">"1.0.0"</span>,               <span class="jc">// 项目版本</span>
+  <span class="jk">"lockfileVersion"</span>: <span class="jn">3</span>,              <span class="jc">// 格式版本 (npm 9+)</span>
+  <span class="jk">"requires"</span>: <span class="jn">true</span>,                <span class="jc">// 兼容性字段,始终 true</span>
+
+  <span class="jk">"packages"</span>: {                           <span class="jc">// ⭐ 核心:扁平化的包索引</span>
+    <span class="jv">""</span>: {                                    <span class="jc">// 空字符串 = 根项目自身</span>
+      <span class="jk">"name"</span>: <span class="jv">"my-app"</span>,
+      <span class="jk">"version"</span>: <span class="jv">"1.0.0"</span>,
+      <span class="jk">"engines"</span>: { <span class="jk">"node"</span>: <span class="jv">">=18"</span> },
+      <span class="jk">"funding"</span>: { <span class="jk">"url"</span>: <span class="jv">"..."</span> }
+    },
+    <span class="jv">"node_modules/lodash"</span>: {                 <span class="jc">// key = 磁盘路径</span>
+      <span class="jk">"version"</span>: <span class="jv">"4.17.21"</span>,             <span class="jc">// 精确版本</span>
+      <span class="jk">"resolved"</span>: <span class="jv">"https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"</span>,
+      <span class="jk">"integrity"</span>: <span class="jv">"sha512-v2kDEe57..."</span>,  <span class="jc">// SHA512 完整性校验</span>
+      <span class="jk">"engines"</span>: { <span class="jk">"node"</span>: <span class="jv">">=0.10.0"</span> },
+      <span class="jk">"dependencies"</span>: { <span class="jk">"lodash"</span>: <span class="jv">"4.17.21"</span> }
+    },
+    <span class="jv">"node_modules/@babel/core"</span>: {
+      <span class="jk">"version"</span>: <span class="jv">"7.23.9"</span>,
+      <span class="jk">"resolved"</span>: <span class="jv">"https://registry.npmjs.org/@babel/core/-/core-7.23.9.tgz"</span>,
+      <span class="jk">"integrity"</span>: <span class="jv">"sha512-..."</span>,
+      <span class="jk">"dependencies"</span>: {
+        <span class="jk">"@babel/code-frame"</span>: <span class="jv">"^7.23.5"</span>,      <span class="jc">// 扁平引用,非嵌套树</span>
+        <span class="jk">"@babel/generator"</span>: <span class="jv">"^7.23.6"</span>,
+        <span class="jk">"@babel/parser"</span>: <span class="jv">"^7.23.9"</span>
+      }
+    }
+  },
+
+  <span class="jk">"dependencies"</span>: { <span class="jv">"lodash"</span>: { <span class="jk">"version"</span>: <span class="jv">"4.17.21"</span>, ... } }
+                                         <span class="jc">// 旧格式 v1/v2 兼容保留,新代码不再使用</span>
+}</div>
+</div>
+
+<h3 class="h3">关键字段解析</h3>
+<div class="card-g">
+<div class="card">
+<div class="card-title"><span class="badge b-g">version</span> 精确版本号</div>
+<div class="card-body">严格匹配 semver,格式为 <code>主版本.次版本.补丁版本</code>。<code>^4.17.21</code> 在 lockfile 中被解析为 <code>4.17.21</code> 这样的确切版本,不再保留范围语义。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-a">resolved</span> 下载地址</div>
+<div class="card-body">指向确切 tarball 的完整 URL,npm 直接从这个 URL 下载,绕过 registry 解析。不同 registry (官方 / 私有 / 镜像) 会产生不同的 resolved 值。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-y">integrity</span> 完整性校验</div>
+<div class="card-body">使用 <strong>Subresource Integrity</strong> (SRI) 格式:<br><code>sha512-[base64]</code> (当前主流)<br><code>sha1-[hex]</code> (旧格式)<br><code>sha256-[hex]</code> (较少见)</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-o">dependencies</span> 扁平引用</div>
+<div class="card-body">lockfileVersion 3 中,每个包的 dependencies 字段是扁平引用,仅表示"我的直接依赖是什么版本",不再把整个依赖树展开成嵌套结构。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-p">optional</span> 可选依赖标记</div>
+<div class="card-body">设为 <code>true</code> 时,该包安装失败不会导致整体安装失败。不同操作系统可能安装不同平台对应的可选包版本。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-r">engines</span> 引擎约束</div>
+<div class="card-body">声明运行该包所需的 Node.js 和 npm 版本范围。配合 <code>npm config set engine-strict true</code> 可强制校验,不匹配的包安装失败。</div>
+</div>
+</div>
+
+<div class="callout callout-info">
+<div class="callout-icon">→</div>
+<div class="callout-cnt"><strong>为什么 key 使用路径而非包名?</strong> npm 使用扁平化的 <code>node_modules</code> 结构,同一个包名只能有一个版本。路径 key 能清晰表示"哪个包依赖链中的哪个版本",解决嵌套依赖的歧义问题。</div>
+</div>
+
+</div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 2: 依赖树可视化
+═══════════════════════════════════════════ -->
+<div id="tab-tree" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">02 — Dependency Tree</div><h2 class="sec-title">依赖树可视化</h2><p class="sec-desc">package.json 中的声明如何展开为完整依赖树,以及 deduplication 的作用。</p></div>
+
+<h3 class="h3">package.json 声明</h3>
+<div class="dp">
+<div class="dp-tb"><span class="dp-lbl">切换视图:</span>
+<button class="dp-btn on" data-tree="simple">简化树</button>
+<button class="dp-btn" data-tree="full">完整树 (含嵌套)</button>
+<button class="dp-btn" data-tree="dedup">Deduplication 效果</button>
+</div>
+<div class="dp-out" id="tree-output"></div>
+</div>
+
+<h3 class="h3">SVG 可视化: 完整依赖树</h3>
+<div class="tree-wrap">
+<svg id="dep-svg" width="900" height="380" viewBox="0 0 900 380"></svg>
+</div>
+
+<h3 class="h3">npm dedupe 工作原理</h3>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">Deduplication 效果</span><span class="cb-lang">Diagram</span></div>
+<div class="cb-body"><span class="cmt">// 原始状态: express 和 axios 都依赖 follow-redirects@1.x</span>
+
+<span class="kw">Before dedupe (嵌套结构):</span>
+  node_modules/
+  ├── express/
+  │   └── node_modules/
+  │       └── follow-redirects/    <span class="red">@1.14.7 (express 专用)</span>
+  └── axios/
+      └── node_modules/
+          └── follow-redirects/    <span class="red">@1.14.7 (axios 专用)</span>
+
+<span class="kw">After npm dedupe (提升共享依赖):</span>
+  node_modules/
+  ├── follow-redirects/           <span class="grn">@1.14.7 ✅ 只保留一份</span>
+  ├── express/                    <span class="cmt">引用提升后的 follow-redirects</span>
+  └── axios/                      <span class="cmt">引用提升后的 follow-redirects</span></div>
+</div>
+
+<div class="callout callout-warn">
+<div class="callout-icon">⚠</div>
+<div class="callout-cnt"><strong>幽灵依赖 (Phantom Dependencies):</strong> 扁平化结构下,可以 <code>import axios</code> 而不声明依赖。这是因为 <code>axios</code> 的依赖被提升到了根 <code>node_modules</code>。pnpm 的 symlink 结构彻底消除了这一问题。</div>
+</div>
+
+</div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 3: 解析流程
+═══════════════════════════════════════════ -->
+<div id="tab-resolve" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">03 — Resolution</div><h2 class="sec-title">依赖解析完整流程</h2><p class="sec-desc">npm install 从读取 package.json 到写入 lockfile 的每一步。</p></div>
+
+<div class="flow">
+<div class="flow-item"><div class="flow-num">1</div><div class="flow-ct"><div class="flow-ttl">读取 package.json</div><div class="flow-desc">解析 dependencies / devDependencies / optionalDependencies</div></div></div>
+<div class="flow-arr">↓</div>
+<div class="flow-item"><div class="flow-num">2</div><div class="flow-ct"><div class="flow-ttl">读取 package-lock.json (如有)</div><div class="flow-desc">检查 lockfileVersion、name、version 是否匹配</div></div></div>
+<div class="flow-arr">↓</div>
+<div class="flow-item"><div class="flow-num">3</div><div class="flow-ct"><div class="flow-ttl">比较 package.json vs lockfile</div><div class="flow-desc">如果 lockfile 满足 package.json 范围 → 直接用;否则重新解析</div></div></div>
+<div class="flow-arr">↓</div>
+<div class="flow-item"><div class="flow-num">4</div><div class="flow-ct"><div class="flow-ttl">构建依赖图 (Arborist)</div><div class="flow-desc">处理 peerDependencies、嵌套依赖冲突、deduplication</div></div></div>
+<div class="flow-arr">↓</div>
+<div class="flow-item"><div class="flow-num">5</div><div class="flow-ct"><div class="flow-ttl">下载 tarball</div><div class="flow-desc">从 resolved URL 下载,计算 SHA512 与 integrity 比对</div></div></div>
+<div class="flow-arr">↓</div>
+<div class="flow-item"><div class="flow-num">6</div><div class="flow-ct"><div class="flow-ttl">写入 node_modules/.package-lock.json</div><div class="flow-desc">记录当前实际安装状态</div></div></div>
+<div class="flow-arr">↓</div>
+<div class="flow-item"><div class="flow-num">7</div><div class="flow-ct"><div class="flow-ttl">更新 package-lock.json (package.json 有变化时)</div><div class="flow-desc">npm ci 永远不写 lockfile;npm install 可能写</div></div></div>
+</div>
+
+<h3 class="h3">npm install vs npm ci 决策树</h3>
+<div class="dp">
+<div class="dp-tb"><span class="dp-lbl">场景:</span>
+<button class="dp-btn on" data-resolve="install">npm install</button>
+<button class="dp-btn" data-resolve="ci">npm ci</button>
+<button class="dp-btn" data-resolve="dryrun">npm ci --dry-run</button>
+</div>
+<div class="dp-out" id="resolve-output"></div>
+</div>
+
+<h3 class="h3">不同场景下的 lockfile 行为</h3>
+<table>
+<thead><tr><th>操作</th><th>package-lock.json 变化?</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>npm install (首次)</td><td><span class="badge b-g">新建</span></td><td>生成完整的 lockfile</td></tr>
+<tr><td>npm install (package.json 变化)</td><td><span class="badge b-y">更新</span></td><td>重新解析变化的包</td></tr>
+<tr><td>npm install (无变化)</td><td><span class="badge b-r">不变</span></td><td>直接用 lockfile 安装</td></tr>
+<tr><td>npm ci</td><td><span class="badge b-r">永远不写</span></td><td>完全基于 lockfile</td></tr>
+<tr><td>npm install --package-lock-only</td><td><span class="badge b-y">更新</span></td><td>只生成/更新 lockfile,不安装</td></tr>
+<tr><td>rm package-lock.json && npm install</td><td><span class="badge b-g">重新生成</span></td><td>重新解析 semver,可能获取新版本</td></tr>
+<tr><td>npm install lodash@4.17.21 --save</td><td><span class="badge b-y">更新</span></td><td>更新 package.json 和 lockfile</td></tr>
+<tr><td>npm install lodash@latest (无 --save)</td><td><span class="badge b-r">不变</span></td><td>package.json 没变,lockfile 不更新</td></tr>
+</tbody>
+</table>
+
+</div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 4: 版本冲突
+═══════════════════════════════════════════ -->
+<div id="tab-conflict" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">04 — Conflicts</div><h2 class="sec-title">版本冲突与解决</h2><p class="sec-desc">理解 semver 冲突、peerDependencies、幽灵依赖,以及 npm 如何解决。</p></div>
+
+<h3 class="h3">Semver 范围 → 精确版本的解析</h3>
+<p style="font-size:14px;color:var(--txt3);margin-bottom:16px">选择一个 package.json 中的版本声明,查看 lockfile 中最终锁定到哪个版本:</p>
+<div class="ver-grid" id="ver-grid">
+</div>
+
+<h3 class="h3">peerDependencies 冲突场景</h3>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">peerDependencies 冲突示例</span><span class="cb-lang">Scenario</span></div>
+<div class="cb-body"><span class="kw">package.json:</span>
+{
+  <span class="jk">"dependencies"</span>: {
+    <span class="jv">"react-dom"</span>: <span class="jv">"18.2.0"</span>,          <span class="cmt">// 要求 react@^18</span>
+    <span class="jv">"antd"</span>: <span class="jv">"5.12.0"</span>               <span class="cmt">// antd 5.x 要求 react@^18</span>
+  }
+}
+
+<span class="cmt">// 安装时 npm 发现:</span>
+<span class="kw">react-dom@18.2.0</span> requires <span class="jk">"react"</span>: <span class="jv">"^18.0.0"</span>  <span class="grn">✅ 兼容</span>
+<span class="kw">antd@5.12.0</span>     requires <span class="jk">"react"</span>: <span class="jv">"^18.0.0"</span>  <span class="grn">✅ 兼容</span>
+
+<span class="kw">// 结论: 可以共用 react@18.2.0</span>
+
+<span class="cmt">// ── 冲突场景 ──</span>
+<span class="kw">package.json:</span> react-dom@17 + antd@5 (要求 react@^18)
+<span class="red">ERROR</span>: 无法同时满足 peer dependency
+→ 需要降级 antd 或升级 react-dom</div>
+</div>
+
+<h3 class="h3">为什么有 lockfile 仍可能版本不同 — 5 大原因</h3>
+<div class="card-g">
+<div class="card">
+<div class="card-title"><span class="badge b-r">❌ 最常见</span>手动改 node_modules</div>
+<div class="card-body">构建脚本中执行 <code>npm install lodash@latest</code> 后 node_modules 里是最新版,但 lockfile 仍是旧版。下次 <code>npm install</code> 会回退。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-y">❌ Semver 范围</span> ^ 和 *</div>
+<div class="card-body"><code>"axios": "^1.0"</code> 允许 1.x.x 所有版本。如果删掉 lockfile 重装,可能装到 1.7.0 而非 1.0.0。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-y">❌ npm 版本不同</span></div>
+<div class="card-body">npm 7/8/9 的依赖解析算法有差异。同一个 lockfile 在 npm 6 和 npm 9 下安装结果可能略有不同。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-y">❌ Registry 差异</span></div>
+<div class="card-body">不同 registry 的 resolved URL 不同。私有的 npmmirror 可能缓存不同版本的包。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-y">❌ optional 包平台差异</span></div>
+<div class="card-body"><code>fsevents</code> 仅 macOS,<code>sharp</code> 预编译二进制有平台差异。不同 CI 机器可能装到不同可选包。</div>
+</div>
+</div>
+
+<h3 class="h3">构建脚本修改 node_modules 的后果</h3>
+<div class="dp">
+<div class="dp-tb"><span class="dp-lbl">场景:</span>
+<button class="dp-btn on" data-cf="cf-wrong">❌ 错误: 构建脚本 npm install</button>
+<button class="dp-btn" data-cf="cf-direct">❌ 错误: 直接改 node_modules</button>
+<button class="dp-btn" data-cf="cf-ci">CI 中 npm ci 不一致</button>
+<button class="dp-btn" data-cf="cf-right">✅ 正确: 通过 package.json</button>
+</div>
+<div class="dp-out" id="cf-output"></div>
+</div>
+
+</div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 5: lockfileVersion
+═══════════════════════════════════════════ -->
+<div id="tab-version" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">05 — lockfileVersion</div><h2 class="sec-title">lockfileVersion 版本对照</h2><p class="sec-desc">三种 lockfileVersion 格式的结构差异和兼容性。</p></div>
+
+<table>
+<thead><tr><th>lockfileVersion</th><th>npm 版本</th><th>核心结构</th><th>兼容性</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>npm 5, npm 6</td><td>嵌套 dependencies 树</td><td>npm 5-6 相互兼容</td></tr>
+<tr><td>2</td><td>npm 7, npm 8</td><td>新增扁平 packages 字段</td><td>npm 7+ 读 v2,v1 忽略新字段</td></tr>
+<tr><td>3</td><td>npm 9, npm 10</td><td>packages 为主要结构</td><td>npm 9+ 读 v3,v2/v1 降级提示</td></tr>
+</tbody>
+</table>
+
+<h3 class="h3">结构对比: v1 vs v2 vs v3</h3>
+<div class="dp">
+<div class="dp-tb"><span class="dp-lbl">版本:</span>
+<button class="dp-btn on" data-lfv="lfv1">lockfileVersion 1</button>
+<button class="dp-btn" data-lfv="lfv2">lockfileVersion 2</button>
+<button class="dp-btn" data-lfv="lfv3">lockfileVersion 3</button>
+</div>
+<div class="dp-out" id="lfv-output"></div>
+</div>
+
+<h3 class="h3">为什么 npm 9 要改变结构?</h3>
+<div class="card-g">
+<div class="card">
+<div class="card-title"><span class="badge b-a">v1 问题</span>嵌套结构体积膨胀</div>
+<div class="card-body">v1 的 dependencies 树把每个依赖的完整子树都展开。100 个包、深 5 层的依赖树,同一个包可能被声明几十次,lockfile 体积膨胀到数 MB。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-g">v2 解决</span>扁平化 packages 字段</div>
+<div class="card-body">packages 使用 path → metadata 的扁平映射,每个包只出现一次。lodash@4.17.21 在 lockfile 中只存一条记录,无论有多少包依赖它。</div>
+</div>
+<div class="card">
+<div class="card-title"><span class="badge b-y">v3 完善</span>完整支持 optionalDependencies</div>
+<div class="card-body">v3 在每个包的 packages 条目中支持 <code>optional: true</code> 标记,可选依赖的版本也完整锁定,解决了 v2 中可选依赖版本可能漂移的问题。</div>
+</div>
+</div>
+
+<div class="callout callout-info">
+<div class="callout-icon">→</div>
+<div class="callout-cnt"><strong>npm 6 打开 npm 9 生成的 lockfile:</strong> 会看到警告 "package-lock.json was generated with a newer version of npm",但通常仍能正常工作,因为旧版会忽略不认识的字段。</div>
+</div>
+
+</div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 6: 模拟器
+═══════════════════════════════════════════ -->
+<div id="tab-sim" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">06 — Simulator</div><h2 class="sec-title">交互式模拟器</h2><p class="sec-desc">模拟不同操作对 package-lock.json 和 node_modules 的影响。</p></div>
+
+<div class="dp">
+<div class="dp-tb"><span class="dp-lbl">执行操作:</span>
+<button class="dp-btn on" data-sim="sim1">① 首次 npm install</button>
+<button class="dp-btn" data-sim="sim2">② 修改 package.json 后 install</button>
+<button class="dp-btn" data-sim="sim3">③ 直接改 node_modules</button>
+<button class="dp-btn" data-sim="sim4">④ npm ci 干净安装</button>
+<button class="dp-btn" data-sim="sim5">⑤ 删 lock 重装</button>
+</div>
+<div class="dp-out" id="sim-output" style="min-height:300px"></div>
+</div>
+
+<h3 class="h3">诊断命令速查</h3>
+<table>
+<thead><tr><th>命令</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>npm ls</td><td>查看完整依赖树和实际安装版本</td></tr>
+<tr><td>npm ls lodash</td><td>查看 lodash 的完整依赖链</td></tr>
+<tr><td>npm why lodash</td><td>查看谁依赖了 lodash</td></tr>
+<tr><td>npm outdated</td><td>哪些包有新版本 (基于 semver)</td></tr>
+<tr><td>npm ci --dry-run</td><td>检查 lockfile 一致性</td></tr>
+<tr><td>cat node_modules/.package-lock.json | jq '.packages'</td><td>查看实际安装的精确状态</td></tr>
+</tbody>
+</table>
+
+</div>
+</section>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TAB 7: npm vs yarn vs pnpm
+═══════════════════════════════════════════ -->
+<div id="tab-compare" class="hidden">
+<section class="sec">
+<div class="pw">
+<div class="sec-hdr"><div class="sec-num">07 — Comparison</div><h2 class="sec-title">npm vs yarn vs pnpm 对比</h2><p class="sec-desc">三大包管理器的 lockfile 格式、依赖结构和确定性保证。</p></div>
+
+<div class="cg3">
+<div class="cg3c">
+<div class="cg3h"><div class="cg3icon" style="background:#cb3837">n</div><div class="cg3name">npm</div></div>
+<div class="cg3lf">package-lock.json</div>
+<div class="cg3item"><div class="cg3lbl">格式</div><div class="cg3val">JSON</div></div>
+<div class="cg3item"><div class="cg3lbl">Frozen</div><div class="cg3val"><code>npm ci</code></div></div>
+<div class="cg3item"><div class="cg3lbl">node_modules</div><div class="cg3val">扁平化 (hoisted)</div></div>
+<div class="cg3item"><div class="cg3lbl">离线缓存</div><div class="cg3val">依赖 lockfile</div></div>
+<div class="cg3item"><div class="cg3lbl">幽灵依赖</div><div class="cg3val">可能出现</div></div>
+<div class="cg3item"><div class="cg3lbl">确定性</div><div class="cg3val"><code>npm ci</code> 100%</div></div>
+</div>
+<div class="cg3c">
+<div class="cg3h"><div class="cg3icon" style="background:#2c8ebb">y</div><div class="cg3name">yarn</div></div>
+<div class="cg3lf">yarn.lock</div>
+<div class="cg3item"><div class="cg3lbl">格式</div><div class="cg3val">YAML</div></div>
+<div class="cg3item"><div class="cg3lbl">Frozen</div><div class="cg3val"><code>--frozen-lockfile</code></div></div>
+<div class="cg3item"><div class="cg3lbl">node_modules</div><div class="cg3val">扁平化 (hoisted)</div></div>
+<div class="cg3item"><div class="cg3lbl">离线缓存</div><div class="cg3val">.yarn/cache/</div></div>
+<div class="cg3item"><div class="cg3lbl">幽灵依赖</div><div class="cg3val">可能出现</div></div>
+<div class="cg3item"><div class="cg3lbl">确定性</div><div class="cg3val"><code>yarn install</code> 默认</div></div>
+</div>
+<div class="cg3c">
+<div class="cg3h"><div class="cg3icon" style="background:#f69322">p</div><div class="cg3name">pnpm</div></div>
+<div class="cg3lf">pnpm-lock.yaml</div>
+<div class="cg3item"><div class="cg3lbl">格式</div><div class="cg3val">YAML</div></div>
+<div class="cg3item"><div class="cg3lbl">Frozen</div><div class="cg3val"><code>--frozen-lockfile</code></div></div>
+<div class="cg3item"><div class="cg3lbl">node_modules</div><div class="cg3val">非扁平化 (symlink)</div></div>
+<div class="cg3item"><div class="cg3lbl">离线缓存</div><div class="cg3val">.pnpm-store/</div></div>
+<div class="cg3item"><div class="cg3lbl">幽灵依赖</div><div class="cg3val">不会出现</div></div>
+<div class="cg3item"><div class="cg3lbl">确定性</div><div class="cg3val"><code>pnpm install</code> 默认</div></div>
+</div>
+</div>
+
+<h3 class="h3">yarn.lock 结构 (YAML 格式)</h3>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">yarn.lock</span><span class="cb-lang">YAML</span></div>
+<div class="cb-body"><span class="cmt"># key 是 "package-name@semver-range"</span>
+<span class="jk">axios@^1.6.0</span>:
+  <span class="jk">version</span>: <span class="jv">"1.6.8"</span>
+  <span class="jk">resolved</span>: <span class="jv">"https://registry.yarnpkg.com/axios/-/axios-1.6.8.tgz"</span>
+  <span class="jk">integrity</span>: <span class="jv">"sha512-v2kDEe57..."</span>
+  <span class="jk">dependencies</span>:
+    <span class="jk">follow-redirects</span>: <span class="jv">"^1.15.6"</span>
+    <span class="jk">form-data</span>: <span class="jv">"^4.0.0"</span>
+    <span class="jk">proxy-from-env</span>: <span class="jv">"^1.1.0"</span>
+
+<span class="jk">follow-redirects@^1.15.6</span>:
+  <span class="jk">version</span>: <span class="jv">"1.15.6"</span>
+  <span class="jk">resolved</span>: <span class="jv">"https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.6.tgz"</span>
+  <span class="jk">integrity</span>: <span class="jv">"sha512-PWH3UD..."</span></div>
+</div>
+
+<h3 class="h3">pnpm-lock.yaml 结构 (内容寻址)</h3>
+<div class="cb">
+<div class="cb-hdr"><span class="cb-fname">pnpm-lock.yaml (关键片段)</span><span class="cb-lang">YAML</span></div>
+<div class="cb-body"><span class="jk">lockfileVersion</span>: <span class="jv">"6.0"</span>
+
+<span class="jk">importers</span>:
+  <span class="jv">.</span>:
+    <span class="jk">dependencies</span>:
+      <span class="jv">lodash</span>:
+        <span class="jk">specifier</span>: <span class="jv">^4.17.21</span>     <span class="cmt"># package.json 中的原始声明</span>
+        <span class="jk">version</span>: <span class="jv">4.17.21</span>          <span class="cmt"># 解析到的精确版本</span>
+
+<span class="jk">packages</span>:
+  <span class="cmt"># 内容寻址 key: /{包名}/{版本}_{可选子路径}</span>
+  <span class="jv">/lodash/4.17.21</span>:
+    <span class="jk">resolution</span>:
+      <span class="jk">integrity</span>: <span class="jv">sha512-v2kDEe57..."</span>
+      <span class="jk">tarball</span>: <span class="jv">https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz</span>
+    <span class="jk">engines</span>: { <span class="jk">node</span>: <span class="jv">">=0.10.0"</span> }
+    <span class="jk">version</span>: <span class="jv">4.17.21</span></div>
+</div>
+
+<h3 class="h3">关键差异: node_modules 结构</h3>
+<div class="dp">
+<div class="dp-tb"><span class="dp-lbl">视图:</span>
+<button class="dp-btn on" data-nm="npm">npm (扁平化)</button>
+<button class="dp-btn" data-nm="yarn">yarn (扁平化)</button>
+<button class="dp-btn" data-nm="pnpm">pnpm (symlink)</button>
+</div>
+<div class="dp-out" id="nm-output"></div>
+</div>
+
+<div class="callout callout-ok">
+<div class="callout-icon">✓</div>
+<div class="callout-cnt"><strong>选型建议:</strong> 简单项目 → npm; 需要离线缓存和可读 lockfile → yarn; 大型 monorepo / 高性能需求 → pnpm。三者都能实现确定性,只是实现路径和权衡不同。</div>
+</div>
+
+</div>
+</section>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+
+// Trees
+const trees = {
+  simple: `<span class="kw">my-app</span> <span class="cmt">@1.0.0</span>
+│
+├── <span class="tv-pkg tv-d1">axios</span><span class="tv-ver">@1.6.8</span>
+│   └── <span class="tv-pkg tv-d2">follow-redirects</span><span class="tv-ver">@1.15.6</span>
+│       └── <span class="tv-pkg tv-d3">delayed-stream</span><span class="tv-ver">@1.0.0</span>
+│
+├── <span class="tv-pkg tv-d1">express</span><span class="tv-ver">@4.18.2</span>
+│   ├── <span class="tv-pkg tv-d2">body-parser</span><span class="tv-ver">@1.20.2</span>
+│   ├── <span class="tv-pkg tv-d2">cookie</span><span class="tv-ver">@0.5.0</span>
+│   └── <span class="tv-pkg tv-d2">debug</span><span class="tv-ver">@2.6.9</span>
+│
+└── <span class="tv-pkg tv-d1">lodash</span><span class="tv-ver">@4.17.21</span>`,
+
+  full: `<span class="kw">my-app</span> <span class="cmt">@1.0.0</span>
+│
+├── <span class="tv-pkg tv-d1">axios</span><span class="tv-ver">@1.6.8</span>
+│   ├── <span class="tv-pkg tv-d2">follow-redirects</span><span class="tv-ver">@1.15.6</span>
+│   │   └── <span class="tv-pkg tv-d3">delayed-stream</span><span class="tv-ver">@1.0.0</span>
+│   │       └── <span class="tv-pkg tv-d4">combined-stream</span><span class="tv-ver">@1.0.0</span>
+│   │           └── <span class="tv-pkg tv-d3">ms</span><span class="tv-ver">@2.0.0</span>
+│   ├── <span class="tv-pkg tv-d2">form-data</span><span class="tv-ver">@4.0.0</span>
+│   │   └── <span class="tv-pkg tv-d3">combined-stream</span><span class="tv-ver">@1.0.0</span>  <span class="cmt">← 共享 ms@2.0.0</span>
+│   └── <span class="tv-pkg tv-d2">proxy-from-env</span><span class="tv-ver">@1.1.0</span>
+│
+├── <span class="tv-pkg tv-d1">express</span><span class="tv-ver">@4.18.2</span>
+│   ├── <span class="tv-pkg tv-d2">body-parser</span><span class="tv-ver">@1.20.2</span>
+│   │   ├── <span class="tv-pkg tv-d3">bytes</span><span class="tv-ver">@3.1.2</span>
+│   │   ├── <span class="tv-pkg tv-d3">debug</span><span class="tv-ver">@2.6.9</span>
+│   │   │   └── <span class="tv-pkg tv-d4">ms</span><span class="tv-ver">@2.0.0</span>        <span class="cmt">← 共享 ms@2.0.0</span>
+│   │   └── <span class="tv-pkg tv-d3">raw-body</span><span class="tv-ver">@2.5.2</span>
+│   │       └── <span class="tv-pkg tv-d3">bytes</span><span class="tv-ver">@3.1.2</span>        <span class="cmt">← hoisted</span>
+│   └── <span class="tv-pkg tv-d2">cookie</span><span class="tv-ver">@0.5.0</span>
+│
+└── <span class="tv-pkg tv-d1">lodash</span><span class="tv-ver">@4.17.21</span>`,
+
+  dedup: `<span class="kw">After npm dedupe:</span> <span class="cmt">shared deps hoisted to root node_modules</span>
+
+<span class="kw">node_modules/</span>  <span class="cmt">← 根目录 (hoisted)</span>
+│
+├── <span class="tv-pkg tv-d2">ms</span><span class="tv-ver">@2.0.0</span>               <span class="grn">✅ shared by delayed-stream + debug</span>
+│
+├── <span class="tv-pkg tv-d2">bytes</span><span class="tv-ver">@3.1.2</span>           <span class="grn">✅ shared by body-parser + raw-body</span>
+│
+├── <span class="tv-pkg tv-d2">combined-stream</span><span class="tv-ver">@1.0.0</span> <span class="grn">✅ shared by form-data + delayed-stream</span>
+│
+├── <span class="tv-pkg tv-d1">axios</span><span class="tv-ver">@1.6.8</span>
+│   ├── <span class="tv-pkg tv-d2">follow-redirects</span><span class="tv-ver">@1.15.6</span> <span class="cmt">→ uses hoisted ms</span>
+│   ├── <span class="tv-pkg tv-d2">form-data</span><span class="tv-ver">@4.0.0</span>        <span class="cmt">→ uses hoisted combined-stream</span>
+│   └── <span class="tv-pkg tv-d2">proxy-from-env</span><span class="tv-ver">@1.1.0</span>
+│
+├── <span class="tv-pkg tv-d1">express</span><span class="tv-ver">@4.18.2</span>
+│   ├── <span class="tv-pkg tv-d2">body-parser</span><span class="tv-ver">@1.20.2</span>   <span class="cmt">→ uses hoisted bytes + debug + ms</span>
+│   └── <span class="tv-pkg tv-d2">cookie</span><span class="tv-ver">@0.5.0</span>
+│
+└── <span class="tv-pkg tv-d1">lodash</span><span class="tv-ver">@4.17.21</span>
+
+<span class="red">Phantom deps (幽灵依赖):</span> axios can import ms directly!
+  This is the downside of hoisting.`
+};
+
+// Resolution outputs
+const resolveData = {
+  install: `<span class="cmt">// npm install 执行流程</span>
+
+<span class="kw">Step 1:</span> 读取 <span class="str">package.json</span>
+<span class="kw">Step 2:</span> 检查 <span class="str">package-lock.json</span> 是否存在
+  └─ <span class="grn">存在</span> → 检查 name/version 是否匹配
+  └─ <span class="yll">不存在</span> → 重新解析
+
+<span class="kw">Step 3:</span> 比较 package.json vs lockfile
+  ├─ <span class="grn">一致</span>: lockfile 满足 package.json → 直接用
+  └─ <span class="yll">不一致</span>: 重新解析,可能更新 lockfile
+
+<span class="kw">Step 4:</span> 安装到 node_modules
+<span class="kw">Step 5:</span> 写入 <span class="str">package-lock.json</span> (如有变化)
+
+<span class="cmt">// 关键: npm install 可能更新 lockfile!</span>
+<span class="red">风险:</span> 团队成员执行 npm install 时,
+  如果 package.json 有变化,lockfile 也会被更新。
+  可能引入意外的新版本。`,
+
+  ci: `<span class="cmt">// npm ci 执行流程 (CI/CD 推荐)</span>
+
+<span class="kw">Step 1:</span> 检查 <span class="str">package-lock.json</span> 是否存在
+  └─ <span class="red">不存在 → 直接报错退出!</span>
+
+<span class="kw">Step 2:</span> <span class="red">删除整个 node_modules</span>
+  └─ 确保干净状态,不留残留
+
+<span class="kw">Step 3:</span> 按 lockfile 精确安装每个包
+  ├─ 版本 → 必须是 lockfile 中的精确版本
+  ├─ resolved URL → 必须匹配
+  └─ integrity → 必须通过 SHA 校验
+
+<span class="kw">Step 4:</span> <span class="red">永远不读取 package.json 中的 semver 范围</span>
+
+<span class="cmt">// 关键: npm ci 永远不会更新 lockfile!</span>
+<span class="grn">推荐:</span> CI/CD 中始终使用 npm ci
+  └─ 确保构建确定性
+  └─ 速度更快 (跳过依赖解析)`,
+
+  dryrun: `<span class="cmt">// npm ci --dry-run 检查流程</span>
+
+<span class="kw">检查 1:</span> package-lock.json 是否存在
+<span class="kw">检查 2:</span> node_modules 内容是否与 lockfile 一致
+<span class="kw">检查 3:</span> integrity 哈希校验是否通过
+<span class="kw">检查 4:</span> package.json 与 lockfile 是否兼容
+
+<span class="grn">✅ 一致</span>: 显示将要安装的包列表,无错误
+<span class="red">❌ 不一致</span>: 列出差异,提示需要 npm ci 或 npm install
+
+<span class="cmt">// 本地开发常用:</span>
+<span class="str">npm ci --dry-run</span>  <span class="cmt"># 验证 lockfile 状态</span>
+<span class="str">npm ls lodash</span>      <span class="cmt"># 检查具体包版本</span>`
+};
+
+// Conflict flows
+const cfData = {
+  cfwrong: `<span class="cmt">// ❌ 场景: 构建脚本中执行 npm install lodash@latest</span>
+
+<span class="kw">初始状态:</span>
+  package.json:     <span class="str">"lodash": "^4.17.21"</span>
+  package-lock.json: lodash@<span class="bl">4.17.21</span>
+  node_modules:     lodash@<span class="bl">4.17.21</span>
+
+<span class="kw">构建脚本执行:</span>
+  $ <span class="str">npm install lodash@latest --prefix .</span>
+
+<span class="kw">结果:</span>
+  package.json:     <span class="str">"lodash": "^4.17.21"</span>  <span class="cmt">← 没变!</span>
+  package-lock.json: lodash@<span class="bl">4.17.21</span>         <span class="red">← 没更新!</span>
+  node_modules:     lodash@<span class="bl">4.17.30</span>         <span class="cmt">← 新版安装了</span>
+
+<span class="red">问题:</span>
+  npm install 检测到 package.json 没变
+  → 不会重新解析依赖
+  → 不会更新 lockfile
+  → 只把最新版本装到 node_modules
+
+<span class="kw">下次 npm install / npm ci:</span>
+  → 恢复到 lockfile 版本: <span class="bl">4.17.21</span>
+  → <span class="red">构建修改完全丢失!</span>`,
+
+  cfdirect: `<span class="cmt">// ❌ 场景: 构建脚本直接操作 node_modules</span>
+
+<span class="kw">初始状态:</span> lockfile 和 node_modules 都是 4.17.21
+
+<span class="kw">构建脚本:</span>
+  $ <span class="str">rm -rf node_modules/lodash</span>
+  $ <span class="str">npm install lodash@4.17.30 --no-save</span>
+
+<span class="kw">结果:</span>
+  package.json:     <span class="str">"lodash": "^4.17.21"</span>  <span class="cmt">← 纹丝不动!</span>
+  package-lock.json: <span class="bl">4.17.21</span>              <span class="cmt">← 纹丝不动!</span>
+  node_modules:     <span class="bl">4.17.30</span>              <span class="cmt">← 手动替换了</span>
+
+<span class="kw">npm 的判断逻辑:</span>
+  ├─ package.json 没变化 ✓
+  ├─ lockfile 存在且满足 ^4.17.21 ✓
+  └─ <span class="red">不做任何更新</span>
+
+<span class="red">后果:</span> 每次 npm install 都把 lodash 恢复回 4.17.21
+  构建的修改被持续覆盖,难以调试!`,
+
+  cfci: `<span class="cmt">// ❌ 场景: 本地修改 node_modules,CI 用 npm ci</span>
+
+<span class="kw">开发者本地:</span>
+  $ <span class="str">npm install lodash@4.17.30</span>  <span class="cmt">// 没 --save!</span>
+  $ <span class="str">git add . && git push</span>
+
+<span class="kw">此时 Git 中:</span>
+  package.json:     <span class="str">"lodash": "^4.17.21"</span>  <span class="cmt">← 没更新</span>
+  package-lock.json: <span class="bl">4.17.21</span>              <span class="cmt">← 没更新</span>
+  node_modules:     <span class="bl">4.17.30</span>              <span class="cmt">← .gitignore 中,未提交</span>
+
+<span class="kw">CI 执行 npm ci:</span>
+  ├─ 读取 lockfile: lodash@<span class="bl">4.17.21</span>
+  ├─ 删除 node_modules
+  ├─ 安装 <span class="bl">4.17.21</span> ← 跟本地不一样!
+  └─ <span class="red">npm ci 不会报错 (版本仍满足 semver 范围)</span>
+
+<span class="kw">结果:</span>
+  本地测试: 通过 (lodash@4.17.30)
+  CI 构建:  <span class="red">可能失败</span> (lodash@4.17.21, API 有差异)
+  <span class="red">"Works on my machine" 问题!</span>`,
+
+  cfright: `<span class="cmt">// ✅ 正确: 通过修改 package.json 更新依赖</span>
+
+<span class="kw">Step 1: 更新 package.json (npm install 会写)</span>
+  $ <span class="str">npm install lodash@4.17.30 --save</span>
+
+<span class="kw">结果:</span>
+  package.json:     <span class="str">"lodash": "^4.17.30"</span>   <span class="grn">✅ 已更新</span>
+  package-lock.json: <span class="bl">4.17.30</span>              <span class="grn">✅ 已更新</span>
+  node_modules:     <span class="bl">4.17.30</span>              <span class="grn">✅ 一致</span>
+
+<span class="kw">Step 2: 提交两个文件</span>
+  $ <span class="str">git add package.json package-lock.json</span>
+  $ <span class="str">git commit -m "deps: upgrade lodash to 4.17.30"</span>
+  $ <span class="str">git push</span>
+
+<span class="kw">Step 3: CI 执行 npm ci</span>
+  ├─ 读取 lockfile: lodash@<span class="bl">4.17.30</span>
+  ├─ 删除 node_modules
+  ├─ 安装 <span class="bl">4.17.30</span>
+  └─ <span class="grn">✅ 与本地完全一致!</span>
+
+<span class="grn">关键原则:</span> 永远通过改 package.json 来更新依赖!
+  npm install --save    → 添加/更新依赖
+  npm uninstall --save  → 移除依赖
+  这两种操作会同时更新 package.json 和 lockfile`
+};
+
+// lockfileVersion outputs
+const lfvData = {
+  lfv1: `<span class="cmt">// lockfileVersion 1 (npm 5-6)</span>
+
+{
+  <span class="jk">"name"</span>: <span class="jv">"my-app"</span>,
+  <span class="jk">"version"</span>: <span class="jv">"1.0.0"</span>,
+  <span class="jk">"lockfileVersion"</span>: <span class="jn">1</span>,
+
+  <span class="jk">"dependencies"</span>: {          <span class="cmt">// ⭐ 嵌套树结构</span>
+    <span class="jv">"lodash"</span>: {
+      <span class="jk">"version"</span>: <span class="jv">"4.17.21"</span>,
+      <span class="jk">"resolved"</span>: <span class="jv">"https://registry.npmjs.org/lodash-4.17.21.tgz"</span>,
+      <span class="jk">"integrity"</span>: <span class="jv">"sha1-+..."</span>,
+      <span class="jk">"dependencies"</span>: {}       <span class="cmt">// lodash 无依赖</span>
+    },
+    <span class="jv">"axios"</span>: {
+      <span class="jk">"version"</span>: <span class="jv">"1.6.0"</span>,
+      <span class="jk">"resolved"</span>: <span class="jv">"https://registry.npmjs.org/axios-1.6.0.tgz"</span>,
+      <span class="jk">"integrity"</span>: <span class="jv">"sha1-+..."</span>,
+      <span class="jk">"dependencies"</span>: {
+        <span class="jv">"follow-redirects"</span>: {
+          <span class="jk">"version"</span>: <span class="jv">"1.15.4"</span>,  <span class="cmt">// 嵌套在此,重复声明</span>
+          <span class="jk">"resolved"</span>: <span class="jv">"..."</span>,
+          <span class="jk">"dependencies"</span>: {}
+        }
+      }
+    }
+  }
+}
+
+<span class="cmt">// 问题: 同一个包被重复声明,lockfile 体积大</span>`,
+
+  lfv2: `<span class="cmt">// lockfileVersion 2 (npm 7-8)</span>
+
+{
+  <span class="jk">"name"</span>: <span class="jv">"my-app"</span>,
+  <span class="jk">"version"</span>: <span class="jv">"1.0.0"</span>,
+  <span class="jk">"lockfileVersion"</span>: <span class="jn">2</span>,
+
+  <span class="jk">"packages"</span>: {              <span class="cmt">// ⭐ 新增扁平化 packages</span>
+    <span class="jv">""</span>: { <span class="jk">"name"</span>: <span class="jv">"my-app"</span>, <span class="jk">"version"</span>: <span class="jv">"1.0.0"</span> },
+    <span class="jv">"node_modules/lodash"</span>: {
+      <span class="jk">"version"</span>: <span class="jv">"4.17.21"</span>,
+      <span class="jk">"resolved"</span>: <span class="jv">"..."</span>,
+      <span class="jk">"integrity"</span>: <span class="jv">"..."</span>,
+      <span class="jk">"dependencies"</span>: {}
+    },
+    <span class="jv">"node_modules/axios"</span>: {
+      <span class="jk">"version"</span>: <span class="jv">"1.6.0"</span>,
+      <span class="jk">"resolved"</span>: <span class="jv">"..."</span>,
+      <span class="jk">"integrity"</span>: <span class="jv">"..."</span>,
+      <span class="jk">"dependencies"</span>: {
+        <span class="jk">"follow-redirects"</span>: <span class="jv">"1.15.4"</span>  <span class="cmt">// 扁平引用</span>
+      }
+    },
+    <span class="jv">"node_modules/follow-redirects"</span>: {
+      <span class="jk">"version"</span>: <span class="jv">"1.15.4"</span>,   <span class="cmt">// 每个包只出现一次</span>
+      <span class="jk">"resolved"</span>: <span class="jv">"..."</span>,
+      <span class="jk">"integrity"</span>: <span class="jv">"..."</span>
+    }
+  },
+
+  <span class="jk">"dependencies"</span>: { ... }   <span class="cmt">// 仍保留,兼容 npm 5-6</span>
+}
+
+<span class="grn">// 改进: 每个包只出现一次,lockfile 体积更小</span>`,
+
+  lfv3: `<span class="cmt">// lockfileVersion 3 (npm 9+)</span>
+
+{
+  <span class="jk">"name"</span>: <span class="jv">"my-app"</span>,
+  <span class="jk">"version"</span>: <span class="jv">"1.0.0"</span>,
+  <span class="jk">"lockfileVersion"</span>: <span class="jn">3</span>,
+
+  <span class="jk">"packages"</span>: {
+    <span class="jv">""</span>: { <span class="jk">"name"</span>: <span class="jv">"my-app"</span>, <span class="jk">"version"</span>: <span class="jv">"1.0.0"</span> },
+
+    <span class="jv">"node_modules/fsevents"</span>: {
+      <span class="jk">"version"</span>: <span class="jv">"2.3.3"</span>,
+      <span class="jk">"resolved"</span>: <span class="jv">"..."</span>,
+      <span class="jk">"integrity"</span>: <span class="jv">"..."</span>,
+      <span class="jk">"optional"</span>: <span class="jn">true</span>,           <span class="cmt">// ⭐ 可选依赖标记</span>
+      <span class="jk">"os"</span>: [<span class="jv">"darwin"</span>]             <span class="cmt">// 仅 macOS</span>
+    },
+
+    <span class="jv">"node_modules/lodash"</span>: {
+      <span class="jk">"version"</span>: <span class="jv">"4.17.21"</span>,
+      <span class="jk">"resolved"</span>: <span class="jv">"..."</span>,
+      <span class="jk">"integrity"</span>: <span class="jv">"..."</span>
+    }
+  }
+
+  <span class="cmt">// dependencies 字段已废弃,不再使用</span>
+}
+
+<span class="grn">// v3 vs v2: 支持 optionalDependencies 完整锁定</span>`
+};
+
+// Simulator scenarios
+const simData = {
+  sim1: `<span class="cmt">// 场景①: 首次 npm install (冷启动)</span>
+
+<span class="kw">执行:</span> $ npm install
+
+<span class="kw">package.json:</span>
+{
+  <span class="jk">"dependencies"</span>: {
+    <span class="jv">"lodash"</span>: <span class="jv">"^4.17.21"</span>,
+    <span class="jv">"axios"</span>: <span class="jv">"^1.6.0"</span>
+  }
+}
+
+<span class="kw">Step 1:</span> package-lock.json 不存在 → 重新解析
+<span class="kw">Step 2:</span> 从 registry 获取 lodash@^4.17.21 的元数据
+  └─ <span class="grn">解析到: 4.17.21 (首个满足 >=4.17.21 <5.0.0 的版本)</span>
+<span class="kw">Step 3:</span> 从 registry 获取 axios@^1.6.0 的元数据
+  └─ <span class="grn">解析到: 1.6.8</span>
+<span class="kw">Step 4:</span> 下载 tarball,校验 integrity
+<span class="kw">Step 5:</span> 写入 package-lock.json
+
+<span class="grn">✅ 生成完整的 package-lock.json</span>
+<span class="grn">✅ node_modules 和 lockfile 一致</span>`,
+
+  sim2: `<span class="cmt">// 场景②: 修改 package.json 后 npm install</span>
+
+<span class="kw">初始:</span> lockfile 已有 lodash@4.17.21, axios@1.6.8
+
+<span class="kw">操作:</span> $ npm install lodash@4.17.30 --save
+
+<span class="kw">Step 1:</span> 检测到 package.json 变化
+  ├─ lodash: "^4.17.21" → "^4.17.30"
+<span class="kw">Step 2:</span> 重新解析 lodash@^4.17.30
+  └─ <span class="grn">解析到: 4.17.30</span>
+<span class="kw">Step 3:</span> axios 没变 → 直接用 lockfile 中的版本
+<span class="kw">Step 4:</span> 更新 package-lock.json
+
+<span class="grn">✅ package.json: "^4.17.30"</span>
+<span class="grn">✅ package-lock.json: 4.17.30"</span>
+<span class="grn">✅ node_modules: 4.17.30</span>
+<span class="grn">✅ 三个文件完全一致</span>`,
+
+  sim3: `<span class="cmt">// 场景③: 直接修改 node_modules (危险操作)</span>
+
+<span class="kw">初始:</span> 三个文件都是 lodash@4.17.21
+
+<span class="kw">操作:</span>
+  $ <span class="str">rm -rf node_modules/lodash</span>
+  $ <span class="str">npm install lodash@4.17.30 --no-save</span>
+
+<span class="kw">Step 1:</span> 检测 package.json
+  └─ <span class="yll">没变化! 还是 "^4.17.21"</span>
+<span class="kw">Step 2:</span> 检测 lockfile
+  └─ <span class="yll">lockfile 存在且满足 ^4.17.21</span>
+<span class="kw">Step 3:</span> npm 判定: <span class="red">不需要更新 lockfile</span>
+<span class="kw">Step 4:</span> 不做任何事 (node_modules 的变化被忽略)
+
+<span class="red">❌ 实际效果: npm 完全忽略了这个操作!</span>
+
+<span class="kw">验证:</span>
+  $ <span class="str">cat node_modules/lodash/package.json | grep version</span>
+  → <span class="bl">4.17.30</span>   <span class="cmt">(被修改了)</span>
+
+  $ <span class="str">cat node_modules/.package-lock.json | jq '.packages["node_modules/lodash"].version'</span>
+  → <span class="bl">4.17.21</span>   <span class="cmt">(lockfile 中是旧版)</span>
+
+<span class="red">❌ .package-lock.json ≠ package-lock.json!</span>
+  这说明 node_modules 被手动修改了。`,
+
+  sim4: `<span class="cmt">// 场景④: npm ci 干净安装 (CI/CD 标准流程)</span>
+
+<span class="kw">初始:</span> 本地修改了 node_modules/lodash 成 4.17.30
+         但 package-lock.json 仍是 4.17.21
+
+<span class="kw">执行:</span> $ npm ci
+
+<span class="kw">Step 1:</span> 读取 package-lock.json
+  └─ lodash@<span class="bl">4.17.21</span>, resolved: https://registry.npmjs.org/...
+<span class="kw">Step 2:</span> <span class="red">删除整个 node_modules</span>
+  └─ 包括手动修改的 lodash@4.17.30
+<span class="kw">Step 3:</span> 按 lockfile 精确安装
+  └─ 从 https://registry.npmjs.org/... 下载
+  └─ 安装 lodash@<span class="bl">4.17.21</span>
+  └─ 校验 integrity 哈希
+<span class="kw">Step 4:</span> <span class="red">不读取 package.json 中的 semver</span>
+<span class="kw">Step 5:</span> <span class="red">永远不写 package-lock.json</span>
+
+<span class="grn">✅ 最终: node_modules = lockfile = 4.17.21</span>
+<span class="grn">✅ .package-lock.json 和 package-lock.json 一致</span>
+<span class="grn">✅ CI 构建确定性 100%</span>`,
+
+  sim5: `<span class="cmt">// 场景⑤: 删掉 lockfile 重装 (危险操作)</span>
+
+<span class="kw">操作:</span> $ rm package-lock.json && npm install
+
+<span class="kw">Step 1:</span> lockfile 不存在 → 重新解析
+<span class="kw">Step 2:</span> 从 registry 获取元数据
+  └─ <span class="yll">lodash@^4.17.21</span> → 解析到最新满足版本
+  └─ <span class="yll">axios@^1.6.0</span>   → 解析到最新满足版本
+<span class="kw">Step 3:</span> 下载,校验,安装
+<span class="kw">Step 4:</span> 生成新的 package-lock.json
+
+<span class="red">⚠️ 风险: 重新解析可能得到不同的版本!</span>
+
+  ├─ 旧 lockfile: lodash@<span class="bl">4.17.21</span>  (半年前锁定)
+  ├─ 新 lockfile: lodash@<span class="bl">4.17.30</span>  (API 可能变化!)
+  └─ axios: 1.6.0 → <span class="bl">1.7.0</span>  (次版本更新!)
+
+<span class="red">❌ 这就是 "删 lock 重装" 破坏构建的原因!</span>
+
+<span class="grn">✅ 正确做法: 直接 npm install (不删 lockfile)</span>
+  npm install 会在 lockfile 满足 semver 范围时直接复用,
+  不会重新解析版本。`
+};
+
+// Node modules structure views
+const nmData = {
+  npm: `<span class="cmt">// npm: 扁平化结构 (hoisting)</span>
+
+<span class="kw">my-project/node_modules/</span>
+│
+├── <span class="tv-pkg tv-d1">lodash</span>        <span class="tv-ver">@4.17.21</span>      <span class="cmt">← 提升到根</span>
+├── <span class="tv-pkg tv-d1">axios</span>         <span class="tv-ver">@1.6.8</span>
+├── <span class="tv-pkg tv-d2">follow-redirects</span>  <span class="tv-ver">@1.15.6</span>  <span class="cmt">← axios 的依赖被提升</span>
+├── <span class="tv-pkg tv-d2">form-data</span>         <span class="tv-ver">@4.0.0</span>   <span class="cmt">← axios 的依赖被提升</span>
+├── <span class="tv-pkg tv-d2">combined-stream</span>    <span class="tv-ver">@1.0.0</span>  <span class="cmt">← 共享: form-data + delayed-stream</span>
+├── <span class="tv-pkg tv-d2">ms</span>                <span class="tv-ver">@2.0.0</span>   <span class="cmt">← 共享: 多个包都用</span>
+│
+└── <span class="tv-pkg tv-d1">express</span>
+    ├── <span class="tv-pkg tv-d2">body-parser</span>   <span class="cmt">← express 私有</span>
+    ├── <span class="tv-pkg tv-d2">cookie</span>        <span class="cmt">← express 私有</span>
+    └── <span class="tv-pkg tv-d2">debug</span>          <span class="tv-ver">@2.6.9</span>
+
+<span class="cmt">// 幽灵依赖: 可以直接 import ms 而不声明</span>
+<span class="red">import ms from 'ms'</span>   <span class="cmt">// ✅ 成功,但没在 package.json 中声明</span>
+<span class="red">// 这是 npm hoisting 的副作用</span>`,
+
+  yarn: `<span class="cmt">// yarn: 结构与 npm 完全相同 (也用 hoisting)</span>
+
+<span class="kw">my-project/node_modules/</span>
+│
+├── <span class="tv-pkg tv-d1">lodash</span>           <span class="tv-ver">@4.17.21</span>
+├── <span class="tv-pkg tv-d1">axios</span>            <span class="tv-ver">@1.6.8</span>
+├── <span class="tv-pkg tv-d2">follow-redirects</span>   <span class="tv-ver">@1.15.6</span>
+├── <span class="tv-pkg tv-d2">form-data</span>          <span class="tv-ver">@4.0.0</span>
+├── <span class="tv-pkg tv-d2">combined-stream</span>     <span class="tv-ver">@1.0.0</span>
+├── <span class="tv-pkg tv-d2">ms</span>                 <span class="tv-ver">@2.0.0</span>
+│
+└── <span class="tv-pkg tv-d1">express</span>
+    ├── <span class="tv-pkg tv-d2">body-parser</span>
+    ├── <span class="tv-pkg tv-d2">cookie</span>
+    └── <span class="tv-pkg tv-d2">debug</span>
+
+<span class="cmt">// yarn.lock 与 package-lock.json 的区别:</span>
+<span class="jk">axios@^1.6.0</span>:           <span class="cmt"># key 是 semver 范围</span>
+  version <span class="jv">"1.6.8"</span>
+  resolved <span class="jv">"https://registry.yarnpkg.com/..."</span>  <span class="cmt"># yarn 专用 CDN</span>
+  integrity <span class="jv">"sha512-..."</span>
+
+<span class="grn">// yarn.lock 优势: 人类可读的 YAML,git diff 更清晰</span>`,
+
+  pnpm: `<span class="cmt">// pnpm: 非扁平化 symlink 结构</span>
+
+<span class="kw">my-project/</span>
+│
+├── <span class="kw">node_modules/</span>
+│   ├── <span class="tv-pkg tv-d1">lodash</span> → <span class="cmt">.pnpm/lodash@4.17.21/node_modules/lodash</span>
+│   ├── <span class="tv-pkg tv-d1">axios</span>  → <span class="cmt">.pnpm/axios@1.6.8/node_modules/axios</span>
+│   └── <span class="tv-pkg tv-d1">express</span> → <span class="cmt">.pnpm/express@4.18.2/node_modules/express</span>
+│
+└── <span class="kw">node_modules/.pnpm/</span>          <span class="cmt">← 真实包存储 (内容寻址)</span>
+    ├── <span class="tv-pkg tv-d2">lodash@4.17.21/</span>
+    │   └── node_modules/
+    │       └── lodash/
+    ├── <span class="tv-pkg tv-d2">axios@1.6.8/</span>
+    │   └── node_modules/
+    │       ├── axios/
+    │       └── <span class="tv-pkg tv-d3">follow-redirects</span> → <span class="cmt">硬链接到 follow-redirects@1.15.6</span>
+    ├── <span class="tv-pkg tv-d2">follow-redirects@1.15.6/</span>
+    ├── <span class="tv-pkg tv-d2">express@4.18.2/</span>
+    │   └── node_modules/
+    │       └── <span class="tv-pkg tv-d3">debug</span> → <span class="cmt">硬链接到 debug@2.6.9</span>
+    └── <span class="tv-pkg tv-d2">debug@2.6.9/</span>
+
+<span class="grn">// 幽灵依赖不存在!</span>
+<span class="red">import ms from 'ms'</span>   <span class="cmt">// ❌ 失败! ms 不在 node_modules/ 下</span>
+<span class="grn">// 必须在 package.json 中声明才能 import</span>`
+};
+
+// Semver version grid data
+const verOptions = [
+  { range: '"lodash": "^4.17.21"', desc: '允许 4.17.21 ~ 5.0.0', resolved: '4.17.21', color: 'b-g' },
+  { range: '"lodash": "~4.17.21"', desc: '允许 4.17.21 ~ 4.18.0', resolved: '4.17.21', color: 'b-a' },
+  { range: '"lodash": "4.17.21"',  desc: '精确版本',              resolved: '4.17.21', color: 'b-p' },
+  { range: '"lodash": ">=4.0.0"', desc: '允许 4.0.0 及以上',    resolved: '4.21.0', color: 'b-y' },
+  { range: '"lodash": "*"',       desc: '允许任意版本',          resolved: '4.21.0', color: 'b-r' },
+  { range: '"lodash": "^1.0.0"',  desc: '允许 1.0.0 ~ 2.0.0',  resolved: '1.2.3', color: 'b-o' },
+];
+
+// ═══════════════════════════════════════════
+// SVG TREE RENDERER
+// ═══════════════════════════════════════════
+function renderTree() {
+  const svg = document.getElementById('dep-svg');
+  if (!svg) return;
+
+  const nodes = [
+    { id: 'app',   label: 'my-app@1.0.0', x: 450, y: 30,  cls: 'tv-root', rx: 60, ry: 14 },
+    { id: 'axios', label: 'axios@1.6.8',  x: 180, y: 100, cls: 'tv-d1',   rx: 60, ry: 14 },
+    { id: 'exprs', label: 'express@4.18.2',x: 450, y: 100, cls: 'tv-d1',  rx: 65, ry: 14 },
+    { id: 'lodash',label: 'lodash@4.17.21',x: 720, y: 100, cls: 'tv-d1',  rx: 65, ry: 14 },
+    { id: 'fr',    label: 'follow-redirects@1.15.6', x: 60, y: 170, cls: 'tv-d2', rx: 100, ry: 14 },
+    { id: 'fd',    label: 'form-data@4.0.0',         x: 220, y: 170, cls: 'tv-d2', rx: 78, ry: 14 },
+    { id: 'bp',    label: 'body-parser@1.20.2',       x: 360, y: 170, cls: 'tv-d2', rx: 80, ry: 14 },
+    { id: 'ck',    label: 'cookie@0.5.0',             x: 480, y: 170, cls: 'tv-d2', rx: 66, ry: 14 },
+    { id: 'db',    label: 'debug@2.6.9',               x: 600, y: 170, cls: 'tv-d2', rx: 64, ry: 14 },
+    { id: 'ds',    label: 'delayed-stream@1.0.0',     x: 60, y: 240, cls: 'tv-d3',  rx: 92, ry: 14 },
+    { id: 'cs',    label: 'combined-stream@1.0.0',    x: 220, y: 240, cls: 'tv-d3',  rx: 90, ry: 14 },
+    { id: 'ms',    label: 'ms@2.0.0',                  x: 60, y: 310, cls: 'tv-d4',  rx: 50, ry: 14 },
+    { id: 'pe',    label: 'proxy-from-env@1.1.0',     x: 360, y: 240, cls: 'tv-d3',  rx: 94, ry: 14 },
+  ];
+
+  const edges = [
+    ['app','axios'],['app','exprs'],['app','lodash'],
+    ['axios','fr'],['axios','fd'],['axios','pe'],
+    ['exprs','bp'],['exprs','ck'],['exprs','db'],
+    ['fr','ds'],['fd','cs'],
+    ['ds','ms'],['pe','ms']
+  ];
+
+  const colorMap = {
+    'tv-root': '#5e6ad2','tv-d1':'#30a46c','tv-d2':'#f5c518',
+    'tv-d3':'#f76b15','tv-d4':'#ab5bd0'
+  };
+
+  const textColorMap = {
+    'tv-root': '#8b94ef','tv-d1':'#3fb950','tv-d2':'#e5c500',
+    'tv-d3':'#ff8533','tv-d4':'#c77deb'
+  };
+
+  let html = '';
+  edges.forEach(([a, b]) => {
+    const na = nodes.find(n => n.id === a);
+    const nb = nodes.find(n => n.id === b);
+    const color = colorMap[nb.cls] || '#888';
+    // Cubic bezier path
+    const mx = na.x;
+    const my = na.y + 14;
+    const ex = nb.x;
+    const ey = nb.y;
+    const cyd = (my + ey) / 2;
+    html += `<path d="M${mx},${my} C${mx},${cyd} ${ex},${cyd} ${ex},${ey}"
+      fill="none" stroke="${color}" stroke-width="1.5" opacity="0.5"
+      marker-end="url(#arr-${nb.cls})"/>`;
+  });
+
+  nodes.forEach(n => {
+    const color = colorMap[n.cls] || '#888';
+    const tColor = textColorMap[n.cls] || '#fff';
+    html += `<rect x="${n.x - n.rx}" y="${n.y - 12}" width="${n.rx*2}" height="28"
+      rx="7" fill="${color}" opacity="0.15" stroke="${color}" stroke-width="1.5"/>`;
+    html += `<text x="${n.x}" y="${n.y + 5}" text-anchor="middle"
+      fill="${tColor}" font-size="11" font-weight="600" font-family="ui-monospace,monospace">${n.label}</text>`;
+
+    // Arrow markers
+    if (!document.getElementById(`arr-${n.cls}`)) {
+      html += `<defs><marker id="arr-${n.cls}" markerWidth="6" markerHeight="6"
+        refX="3" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="${color}"/></marker></defs>`;
+    }
+  });
+
+  svg.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════
+// SEMVER GRID
+// ═══════════════════════════════════════════
+function renderVerGrid() {
+  const grid = document.getElementById('ver-grid');
+  if (!grid) return;
+  grid.innerHTML = verOptions.map((v, i) => `
+    <button class="ver-opt${i === 0 ? ' selected' : ''}" data-vidx="${i}" style="font-family:inherit;width:100%">
+      <div class="pkg-name">package.json</div>
+      <div class="pkg-range">${v.range}</div>
+      <div class="pkg-result">${v.desc}</div>
+      <div class="pkg-result" style="margin-top:4px">→ <span class="badge ${v.color}">${v.resolved}</span></div>
+    </button>`).join('');
+}
+
+// ═══════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════
+function switchTab(target) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('[id^="tab-"]').forEach(p => {
+    if (p.tagName !== 'SECTION') p.classList.add('hidden');
+  });
+  const panel = document.getElementById(target);
+  if (panel) panel.classList.remove('hidden');
+  const activeTab = document.querySelector('.tab[data-tab="' + target + '"]');
+  if (activeTab) activeTab.classList.add('on');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => switchTab(tab.getAttribute('data-tab')));
+});
+
+// ═══════════════════════════════════════════
+// TREE TABS
+// ═══════════════════════════════════════════
+function initTree() {
+  const out = document.getElementById('tree-output');
+  if (out) out.innerHTML = trees.simple;
+}
+document.querySelectorAll('[data-tree]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-tree]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    const out = document.getElementById('tree-output');
+    if (out) out.innerHTML = trees[btn.getAttribute('data-tree')] || '';
+  });
+});
+
+// ═══════════════════════════════════════════
+// RESOLVE TABS
+// ═══════════════════════════════════════════
+function initResolve() {
+  const out = document.getElementById('resolve-output');
+  if (out) out.innerHTML = resolveData.install;
+}
+document.querySelectorAll('[data-resolve]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-resolve]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    const out = document.getElementById('resolve-output');
+    if (out) out.innerHTML = resolveData[btn.getAttribute('data-resolve')] || '';
+  });
+});
+
+// ═══════════════════════════════════════════
+// CONFLICT TABS
+// ═══════════════════════════════════════════
+function initCf() {
+  const out = document.getElementById('cf-output');
+  if (out) out.innerHTML = cfData.cfwrong;
+}
+document.querySelectorAll('[data-cf]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-cf]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    const out = document.getElementById('cf-output');
+    if (out) out.innerHTML = cfData[btn.getAttribute('data-cf')] || '';
+  });
+});
+
+// ═══════════════════════════════════════════
+// LOCKFILE VERSION TABS
+// ═══════════════════════════════════════════
+function initLfv() {
+  const out = document.getElementById('lfv-output');
+  if (out) out.innerHTML = lfvData.lfv1;
+}
+document.querySelectorAll('[data-lfv]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-lfv]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    const out = document.getElementById('lfv-output');
+    if (out) out.innerHTML = lfvData[btn.getAttribute('data-lfv')] || '';
+  });
+});
+
+// ═══════════════════════════════════════════
+// SIMULATOR
+// ═══════════════════════════════════════════
+function initSim() {
+  const out = document.getElementById('sim-output');
+  if (out) out.innerHTML = simData.sim1;
+}
+document.querySelectorAll('[data-sim]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-sim]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    const out = document.getElementById('sim-output');
+    if (out) out.innerHTML = simData[btn.getAttribute('data-sim')] || '';
+  });
+});
+
+// ═══════════════════════════════════════════
+// NODE MODULES STRUCTURE
+// ═══════════════════════════════════════════
+function initNm() {
+  const out = document.getElementById('nm-output');
+  if (out) out.innerHTML = nmData.npm;
+}
+document.querySelectorAll('[data-nm]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-nm]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    const out = document.getElementById('nm-output');
+    if (out) out.innerHTML = nmData[btn.getAttribute('data-nm')] || '';
+  });
+});
+
+// ═══════════════════════════════════════════
+// SEMVER VERSION GRID INTERACTIONS
+// ═══════════════════════════════════════════
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-vidx]');
+  if (btn) {
+    document.querySelectorAll('[data-vidx]').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+});
+
+// ═══════════════════════════════════════════
+// INIT ALL
+// ═══════════════════════════════════════════
+(function init() {
+  renderTree();
+  renderVerGrid();
+  initTree();
+  initResolve();
+  initCf();
+  initLfv();
+  initSim();
+  initNm();
+
+  // Ensure correct initial visibility
+  document.querySelectorAll('[id^="tab-"]').forEach(p => {
+    if (p.tagName !== 'SECTION') p.classList.add('hidden');
+  });
+  const firstPanel = document.getElementById('tab-struct');
+  if (firstPanel) firstPanel.classList.remove('hidden');
+})();
+</script>
+</body>
+</html>
