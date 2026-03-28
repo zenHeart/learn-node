@@ -2,7 +2,7 @@
 title: package-lock-internals
 tags: node npm package-lock dependency-lock
 birth: 2024-01-01
-modified: 2024-01-01
+modified: 2026-03-28
 ---
 
 package-lock-internals
@@ -10,11 +10,26 @@ package-lock-internals
 
 **前言:深入讲解 npm package-lock.json 的内部结构与锁定机制**
 
+> 本文档配套交互式演示: `examples/package-lock-internals-demo.html`
+
 ---
 
 ## 概述
 
 `package-lock.json` 是 npm 5+ 版本引入的锁文件,用于锁定依赖包的精确版本,确保团队协作和构建的可重现性。本文深入讲解其内部结构和工作原理。
+
+### 核心问题:为什么需要 package-lock.json?
+
+没有 lockfile 时,`package.json` 中的 semver 范围在每次安装时可能解析到不同版本:
+
+| package.json | 首次安装 | 6 个月后安装 | 原因 |
+|---|---|---|---|
+| `"lodash": "^4.17.21"` | 4.17.21 | 4.17.21 → 4.17.**25** | 小版本更新 |
+| `"lodash": "~4.17.21"` | 4.17.21 | 4.17.**25** → 4.17.**30** | 补丁版本更新 |
+| `"lodash": "4.17.21"` | 4.17.21 | **始终 4.17.21** | 确切版本 |
+| `"lodash": "*"` | 随机 | 随机 | 完全不约束 |
+
+`package-lock.json` 的出现就是为了消除这种不确定性——它记录了**首次安装时解析到的精确版本**,下次安装直接复用,而不是重新解析 semver 范围。
 
 ---
 
