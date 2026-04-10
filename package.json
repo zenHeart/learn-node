@@ -1,0 +1,12 @@
+{
+  "name": "learn-node",
+  "version": "1.0.0",
+  "description": "Node.js 核心模块学习仓库，收集核心模块的使用范例和实战项目",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["nodejs", "learn", "examples", "core-modules"],
+  "author": "zenHeart",
+  "license": "MIT"
+}
